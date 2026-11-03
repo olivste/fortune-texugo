@@ -1,7 +1,7 @@
 /* EDITE AQUI: todos os nomes, textos e imagens do Fortune Texugo.
    Troque os arquivos em assets/ sem mexer na lógica do jogo. */
 window.FORTUNE_ASSETS = {
-  mascot: "assets/mascote.svg",
+  apiBase: "", // Ex.: "https://fortune-api.up.railway.app" quando o site estiver no GitHub Pages\n  mascot: "assets/mascote.svg",
   background: "assets/cassino.svg",
   text: {
     brand: "RISCA FACA",
