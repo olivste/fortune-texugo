@@ -112,3 +112,29 @@ Sem URL e chave Supabase configuradas, o `index.html` funciona como **prévia lo
 
 ---
 **Responsável:** Risca Faca. Projeto em desenvolvimento; não utilizar como sistema promocional de produção sem as etapas pendentes.
+
+
+## 10. Personalização de imagens e textos (V5)
+
+A referência visual é o feed do Risca Faca: **cassino ilustrado, cartaz vintage, cortinas vermelhas, fundo preto, dourado envelhecido e marquise Vegas**. Não usar emojis como arte final.
+
+**Tudo separado por arquivo:**
+
+| Caminho | O que trocar |
+|---|---|
+| `assets/content.js` | **Todos os nomes, títulos, slogans, data/local e caminhos das imagens** |
+| `assets/theme.css` | Cores, molduras, tipografia e efeitos visuais |
+| `assets/mascote.svg` | Ilustração provisória do Riquelme no medalhão |
+| `assets/cassino.svg` | Fundo ilustrado do cassino |
+| `assets/simbolos/bananinha.svg` | Símbolo da bananinha |
+| `assets/simbolos/flor-de-lis.svg` | Símbolo flor-de-lis |
+| `assets/simbolos/texugo.svg` | Símbolo do texugo |
+| `assets/simbolos/copo.svg` | Símbolo do copo |
+| `assets/simbolos/carta.svg` | Símbolo da carta |
+| `assets/simbolos/ficha.svg` | Símbolo da ficha |
+
+**Como trocar:** envie a nova imagem para a pasta `assets/` (PNG, WebP ou SVG) e atualize o caminho correspondente em `assets/content.js`. As ilustrações SVG atuais são **placeholders editáveis**, não reproduções fiéis da arte enviada.
+
+**Próximos ajustes visuais:** usar o Riquelme oficial da arte, criar símbolos na mesma linguagem do post, transformar o fundo em um cassino ilustrado em camadas e refinar o movimento dos rolos.
+
+**Atenção técnica:** os símbolos são apresentados no cliente. O resultado de premiação é determinado no servidor, sem dependência da combinação visual. Essa distinção deve estar explícita na experiência e no regulamento antes de qualquer lançamento.
