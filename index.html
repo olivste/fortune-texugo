@@ -1,9 +1,92 @@
 <!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fortune Texugo | Risca Faca</title><style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=DM+Sans:wght@400;700&display=swap');
 *{box-sizing:border-box}body{margin:0;color:#ffe5a4;background:radial-gradient(ellipse at top,#792323,#1c090e 70%);font-family:'DM Sans',sans-serif}.wrap{max-width:1100px;margin:auto;padding:20px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #b48b52;padding:10px 0}header b{font:700 30px Oswald}a{color:#f7c976}h1,h2,.spin,.marquee{font-family:Oswald}h1{font-size:clamp(42px,8vw,88px);margin:8px 0;text-align:center;text-shadow:3px 4px #63191c}p{line-height:1.5}.intro{text-align:center;margin:28px auto}.intro small{letter-spacing:3px}.status{display:inline-block;border:1px solid #b58a4e;background:#4e2521;padding:9px 15px;border-radius:8px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px}.machine{border:9px ridge #eac36b;border-radius:32px;padding:14px;background:linear-gradient(140deg,#a71e2b,#530c17);box-shadow:0 15px 50px #0008,inset 0 0 0 4px #f3c86d}.marquee{text-align:center;background:#740f1a;border:3px solid #edc579;border-radius:16px;padding:12px;font-size:clamp(26px,4vw,48px);text-shadow:2px 3px #280609}.marquee small{display:block;font:700 12px 'DM Sans';letter-spacing:2px}.bulbs{display:flex;justify-content:space-around;padding:13px}.bulbs i{width:9px;height:9px;border-radius:50%;background:#ffe3a0;box-shadow:0 0 10px #ffd477}.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;background:#4c0c14;border:5px solid #e8b45b;border-radius:15px;padding:9px}.reel{display:grid;gap:6px}.symbol{height:90px;display:grid;place-items:center;border-radius:8px;background:linear-gradient(#fff7e5,#e6d09d);color:#54171a;font-size:clamp(30px,5vw,60px)}.symbol:nth-child(2){outline:3px solid #db9d39;outline-offset:-4px}.spinning .symbol{animation:shake .12s infinite alternate;filter:blur(2px)}@keyframes shake{to{transform:translateY(7px)}}.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 0 4px;font:700 21px Oswald}.spin{font-size:26px;color:white;background:linear-gradient(#75d46a,#24772e);border:3px solid #b9e29b;border-radius:14px;padding:11px 27px;cursor:pointer}.spin:disabled{opacity:.5;cursor:not-allowed}.panel{border:1px solid #a67842;background:#2b1417;border-radius:16px;padding:20px;margin-bottom:15px}.panel h2{margin:0 0 10px}.panel label{display:block;font-size:12px;font-weight:bold;margin:12px 0 5px}.panel input{width:100%;padding:12px;border:1px solid #a47c48;background:#180b0e;color:white;border-radius:9px}.panel button{width:100%;padding:13px;background:#e0b66a;color:#24110d;border:0;border-radius:9px;font-weight:bold;margin-top:15px;cursor:pointer}.message{text-align:center;min-height:45px;padding:14px;font-weight:bold}.hidden{display:none!important}.prize{padding:12px;background:#173b20;border:1px solid #8fd27e;overflow-wrap:anywhere}.foot{text-align:center;color:#bca48c;font-size:12px;padding:30px 0}@media(max-width:800px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:12px}}@media(max-width:550px){.side{display:block}.machine{padding:6px;border-width:5px}.reels{gap:3px;padding:5px}.symbol{height:68px;font-size:35px}.spin{font-size:22px;padding:10px 18px}}
+
+/* V4.1 — efeitos visuais: iluminação, movimento, reels e feedback */
+body{background:radial-gradient(ellipse at 50% -15%,#a63134 0%,#3b0c17 46%,#12080c 100%);min-height:100vh}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:radial-gradient(#e4bd7c 0.7px,transparent 0.7px);background-size:24px 24px}
+.wrap{position:relative}header{backdrop-filter:blur(12px)}.intro{animation:appear .8s both}.intro h1{background:linear-gradient(100deg,#ffe5a1,#fff5d3,#d69b40,#ffe6a1);background-clip:text;-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 #4d151b)}
+.machine{position:relative;isolation:isolate;overflow:hidden;transition:transform .25s ease,box-shadow .25s ease;box-shadow:0 25px 60px #000b,0 0 38px #e7a14d33,inset 0 0 0 4px #f3c86d}
+.machine:before{content:"";position:absolute;z-index:-1;inset:0;background:linear-gradient(115deg,transparent 10%,#fff4c514 25%,transparent 40%);pointer-events:none}
+.machine.win{animation:winPulse .7s ease-in-out 3;box-shadow:0 0 65px #ffe078,0 20px 70px #0009,inset 0 0 0 4px #fff3bf}
+.marquee{position:relative;overflow:hidden;box-shadow:inset 0 0 20px #2b020d,0 0 20px #e4ac473d}.marquee:after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 20%,#fff9d430 48%,transparent 60%);transform:translateX(-130%);animation:shine 5s ease-in-out infinite}
+.bulbs i{animation:bulbGlow 1.7s ease-in-out infinite alternate}.bulbs i:nth-child(3n){animation-delay:.6s}.bulbs i:nth-child(4n){animation-delay:1.1s}
+.reels{position:relative;overflow:hidden;box-shadow:inset 0 0 25px #0008}.reels:before,.reels:after{content:"";position:absolute;left:9px;right:9px;height:23px;z-index:2;pointer-events:none}.reels:before{top:9px;background:linear-gradient(#4b1017aa,transparent)}.reels:after{bottom:9px;background:linear-gradient(transparent,#4b1017aa)}
+.reel{position:relative;overflow:hidden;transition:filter .2s}.symbol{transition:transform .25s ease,background .25s ease;box-shadow:inset 0 2px 9px #fff9,inset 0 -5px 10px #8c622c44;text-shadow:0 4px 5px #4c2d1d2b;user-select:none}
+.reel.rolling .symbol{animation:reelRoll .16s linear infinite;filter:blur(1.5px)}.reel.stopped .symbol{animation:land .35s cubic-bezier(.2,1.7,.35,1) both}
+.spin{position:relative;overflow:hidden;box-shadow:0 6px 0 #174c23,0 12px 22px #0006;transition:transform .14s,filter .14s}.spin:not(:disabled):hover{filter:brightness(1.15);transform:translateY(-2px)}.spin:not(:disabled):active{transform:translateY(5px);box-shadow:0 1px 0 #174c23}.spin:disabled{box-shadow:none}
+.panel{box-shadow:0 14px 25px #0004;transition:border-color .2s}.panel:focus-within{border-color:#ffdc8d}.panel input:focus{outline:2px solid #f2ca80;outline-offset:1px}
+#message{transition:color .2s}#message.celebrate{color:#fff0a7;font-size:23px;animation:land .5s both}
+.confetti{position:fixed;z-index:20;pointer-events:none;width:9px;height:15px;border-radius:2px;animation:confettiFall var(--duration) ease-in forwards;left:var(--left);top:-25px;background:var(--color);transform:rotate(var(--rotation))}
+@keyframes appear{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}@keyframes shine{0%,65%{transform:translateX(-130%)}85%,100%{transform:translateX(130%)}}@keyframes bulbGlow{from{opacity:.45;box-shadow:0 0 3px #ffcf6b}to{opacity:1;box-shadow:0 0 15px 3px #ffdc83}}@keyframes reelRoll{from{transform:translateY(-9px) scale(.97)}to{transform:translateY(10px) scale(1.03)}}@keyframes land{0%{transform:translateY(-20px) scale(.94)}65%{transform:translateY(5px) scale(1.04)}100%{transform:translateY(0) scale(1)}}@keyframes winPulse{50%{transform:scale(1.012);filter:brightness(1.15)}}@keyframes confettiFall{to{top:110vh;transform:translateX(var(--drift)) rotate(900deg);opacity:0}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style></head><body><div class="wrap"><header><b>RISCA BET ⚜</b><a href="#ingressos">INGRESSOS ↗</a></header><section class="intro"><small>WELCOME TO FABULOUS RISCA FACA</small><h1>FORTUNE TEXUGO</h1><p>O texugo gira. A casa se diverte.</p><span id="mode" class="status">DEMONSTRAÇÃO • SEM PRÊMIOS</span></section><main class="layout"><div><div class="machine"><div class="marquee"><small>⚜ RISCA FACA ⚜</small>FORTUNE TEXUGO<small>★ A CASA SEMPRE GANHA ★</small></div><div class="bulbs" id="bulbs"></div><div class="reels" id="reels"></div><div class="controls"><span>GIROS: <span id="remaining">3</span>/3</span><button id="spin" class="spin" disabled>GIRAR ↻</button></div></div><div class="message" id="message" aria-live="polite">Cadastre-se para liberar os giros!</div></div><aside class="side"><section class="panel" id="registration"><h2>ENTRE NO JOGO</h2><p>Cadastre nome e WhatsApp para três giros gratuitos.</p><form id="form"><label for="name">SEU NOME</label><input id="name" required minlength="2" maxlength="80" autocomplete="name"><label for="phone">WHATSAPP COM DDD</label><input id="phone" type="tel" required placeholder="(27) 99999-9999"><button>LIBERAR 3 GIROS</button></form><p id="notice">Um cadastro por participante. Não é necessário comprar ingresso.</p></section><section class="panel"><h2>OS 5 COPOS</h2><p>Copos restantes: <b id="stock">5 / 5</b></p><p>Premiação real bloqueada até a autorização oficial.</p><div id="winner" class="prize hidden"></div></section><section class="panel" id="ingressos"><h2>CALOURADA DE ENGENHARIA</h2><p>05 DE DEZEMBRO • 21H<br>CASA BRAVA</p><a id="ticket" href="#ingressos">INGRESSOS EM BREVE</a></section></aside></main><div class="foot">RISCA FACA ⚜ • Giros gratuitos, sem apostas em dinheiro.<br>O cadastro não comprova a posse do telefone. A promoção depende de autorização e regulamento.</div></div><script>
-const CONFIG={SUPABASE_URL:'',SUPABASE_ANON_KEY:'',TICKET_URL:''};const $=id=>document.getElementById(id);const icons=['🍌','⚜️','🦡','💎','🃏','🍒'];let token='',left=3,busy=false;const configured=!!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY);$('bulbs').innerHTML='<i></i>'.repeat(17);$('reels').innerHTML='<div class="reel"><div class="symbol">🍌</div><div class="symbol">⚜️</div><div class="symbol">🃏</div></div><div class="reel"><div class="symbol">🦡</div><div class="symbol">🍌</div><div class="symbol">💎</div></div><div class="reel"><div class="symbol">💎</div><div class="symbol">🦡</div><div class="symbol">⚜️</div></div>';if(CONFIG.TICKET_URL){$('ticket').href=CONFIG.TICKET_URL;$('ticket').textContent='GARANTIR INGRESSO'}if(!configured)$('notice').textContent='Prévia local: sem gravação de dados e sem prêmios.';
-const grid=()=>Array.from({length:3},()=>Array.from({length:3},()=>icons[Math.floor(Math.random()*icons.length)]));function draw(g){for(let c=0;c<3;c++)for(let r=0;r<3;r++)$('reels').children[c].children[r].textContent=g[c][r]}function msg(s){$('message').textContent=s}async function call(fn,data){const r=await fetch(CONFIG.SUPABASE_URL+'/functions/v1/'+fn,{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.SUPABASE_ANON_KEY,Authorization:'Bearer '+CONFIG.SUPABASE_ANON_KEY},body:JSON.stringify(data)});const j=await r.json();if(!r.ok)throw Error(j.error||'Falha na operação');return j}
-$('form').onsubmit=async e=>{e.preventDefault();const name=$('name').value.trim(),phone=$('phone').value.replace(/\D/g,'');if(name.length<2||!/^(?:55)?[1-9]\d{9,10}$/.test(phone))return msg('Informe nome e WhatsApp válido com DDD');const btn=$('form').querySelector('button');btn.disabled=true;try{if(configured){const d=await call('register',{name,phone});token=d.session;left=d.spins_left;$('stock').textContent=d.stock+' / 5';$('mode').textContent=d.demo?'DEMONSTRAÇÃO • SEM PRÊMIOS':'PROMOÇÃO AUTORIZADA'}else{token='local-demo';left=3}$('registration').classList.add('hidden');$('remaining').textContent=left;$('spin').disabled=false;msg('Seus giros estão liberados!')}catch(err){msg(err.message)}finally{btn.disabled=false}};
-$('spin').onclick=async()=>{if(busy||!token||left<=0)return;busy=true;$('spin').disabled=true;$('reels').classList.add('spinning');msg('O texugo está girando...');try{const result=configured?await call('spin',{session:token}):{grid:grid(),spins_left:left-1,stock:5,won:false,demo:true};await new Promise(r=>setTimeout(r,1200));draw(result.grid);left=result.spins_left;$('remaining').textContent=left;$('stock').textContent=result.stock+' / 5';if(result.won){$('winner').classList.remove('hidden');$('winner').textContent='VOCÊ GANHOU UM COPO! Código: '+result.claim_code;msg('JACKPOT!')}else msg(result.demo?'Giro de demonstração, sem premiação.':left?'Não foi dessa vez!':'Seus giros acabaram!')}catch(err){msg(err.message)}finally{$('reels').classList.remove('spinning');busy=false;$('spin').disabled=left<=0}};
+const CONFIG={SUPABASE_URL:'',SUPABASE_ANON_KEY:'',TICKET_URL:''};
+const $=id=>document.getElementById(id);
+const icons=['🍌','⚜️','🦡','💎','🃏','🍒'];
+const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+let token='',left=3,busy=false;
+const configured=!!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY);
+$('bulbs').innerHTML='<i></i>'.repeat(17);
+$('reels').innerHTML=Array.from({length:3},(_,c)=>'<div class="reel">'+Array.from({length:3},(_,r)=>'<div class="symbol">'+icons[(c*2+r)%icons.length]+'</div>').join('')+'</div>').join('');
+if(CONFIG.TICKET_URL){$('ticket').href=CONFIG.TICKET_URL;$('ticket').textContent='GARANTIR INGRESSO'}
+if(!configured)$('notice').textContent='Prévia local: sem gravação de dados e sem prêmios.';
+const randomSymbol=()=>icons[Math.floor(Math.random()*icons.length)];
+const grid=()=>Array.from({length:3},()=>Array.from({length:3},randomSymbol));
+function drawColumn(c,values){for(let r=0;r<3;r++)$('reels').children[c].children[r].textContent=values[r]}
+function msg(s,celebrate=false){$('message').textContent=s;$('message').classList.toggle('celebrate',celebrate)}
+const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function call(fn,data){
+ const r=await fetch(CONFIG.SUPABASE_URL+'/functions/v1/'+fn,{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.SUPABASE_ANON_KEY,Authorization:'Bearer '+CONFIG.SUPABASE_ANON_KEY},body:JSON.stringify(data)});
+ const j=await r.json();if(!r.ok)throw Error(j.error||'Falha na operação');return j
+}
+function confetti(){
+ if(reduced)return;
+ for(let i=0;i<75;i++){const el=document.createElement('i');el.className='confetti';
+ el.style.setProperty('--left',Math.random()*100+'vw');
+ el.style.setProperty('--duration',(2+Math.random()*2.5)+'s');
+ el.style.setProperty('--drift',(Math.random()-.5)*250+'px');
+ el.style.setProperty('--rotation',Math.random()*360+'deg');
+ el.style.setProperty('--color',['#f3cb6b','#fff1bb','#c12435','#69bf6b'][i%4]);
+ document.body.append(el);el.addEventListener('animationend',()=>el.remove())}
+}
+async function animateReels(finalGrid){
+ const columns=Array.from($('reels').children);
+ if(reduced){finalGrid.forEach((v,c)=>drawColumn(c,v));return}
+ columns.forEach(c=>c.classList.add('rolling'));
+ const intervals=columns.map((_,c)=>setInterval(()=>drawColumn(c,Array.from({length:3},randomSymbol)),65));
+ for(let c=0;c<3;c++){
+  await sleep(c===0?780:390);
+  clearInterval(intervals[c]);columns[c].classList.remove('rolling');
+  drawColumn(c,finalGrid[c]);columns[c].classList.add('stopped');
+  await sleep(180);columns[c].classList.remove('stopped');
+ }
+}
+$('form').onsubmit=async e=>{
+ e.preventDefault();
+ const name=$('name').value.trim(),phone=$('phone').value.replace(/\D/g,'');
+ if(name.length<2||!/^(?:55)?[1-9]\d{9,10}$/.test(phone))return msg('Informe nome e WhatsApp válido com DDD');
+ const btn=$('form').querySelector('button');btn.disabled=true;
+ try{
+  if(configured){const d=await call('register',{name,phone});token=d.session;left=d.spins_left;$('stock').textContent=d.stock+' / 5';$('mode').textContent=d.demo?'DEMONSTRAÇÃO • SEM PRÊMIOS':'PROMOÇÃO AUTORIZADA'}
+  else{token='local-demo';left=3}
+  $('registration').classList.add('hidden');$('remaining').textContent=left;$('spin').disabled=false;msg('Seus giros estão liberados!');
+ }catch(err){msg(err.message)}finally{btn.disabled=false}
+};
+$('spin').onclick=async()=>{
+ if(busy||!token||left<=0)return;
+ busy=true;$('spin').disabled=true;msg('O texugo está girando...');
+ try{
+  const request=configured?call('spin',{session:token}):Promise.resolve({grid:grid(),spins_left:left-1,stock:5,won:false,demo:true});
+  const result=await request;
+  await animateReels(result.grid);
+  left=result.spins_left;$('remaining').textContent=left;$('stock').textContent=result.stock+' / 5';
+  if(result.won){
+   $('winner').classList.remove('hidden');$('winner').textContent='VOCÊ GANHOU UM COPO! Código: '+result.claim_code;
+   $('reels').closest('.machine').classList.add('win');confetti();msg('JACKPOT! VOCÊ GANHOU UM COPO!',true);
+   setTimeout(()=>$('reels').closest('.machine').classList.remove('win'),2300);
+  }else msg(result.demo?'Giro de demonstração, sem premiação.':left?'Não foi dessa vez!':'Seus giros acabaram!');
+ }catch(err){msg(err.message)}
+ finally{busy=false;$('spin').disabled=left<=0}
+};
 </script></body></html>
