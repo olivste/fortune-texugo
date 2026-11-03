@@ -138,3 +138,41 @@ A referência visual é o feed do Risca Faca: **cassino ilustrado, cartaz vintag
 **Próximos ajustes visuais:** usar o Riquelme oficial da arte, criar símbolos na mesma linguagem do post, transformar o fundo em um cassino ilustrado em camadas e refinar o movimento dos rolos.
 
 **Atenção técnica:** os símbolos são apresentados no cliente. O resultado de premiação é determinado no servidor, sem dependência da combinação visual. Essa distinção deve estar explícita na experiência e no regulamento antes de qualquer lançamento.
+
+
+## 11. Backend Python + PostgreSQL no Railway (V6)
+
+**Novo backend principal:** `api/main.py` com FastAPI e PostgreSQL (`psycopg`). O código antigo em `supabase/` é **legado e não deve ser implantado**. A API Python serve também `index.html` e `assets/`, permitindo usar **um domínio Railway para site + API**.
+
+### Endpoints
+- `GET /health`: saúde e conectividade PostgreSQL.
+- `GET /api/config`: modo demonstrativo e URL de ingressos.
+- `POST /api/register`: nome e WhatsApp; gera sessão e 3 giros.
+- `GET /api/session`: recupera quantidade de giros via token Bearer.
+- `POST /api/spin`: desconta 1 giro de forma transacional; devolve símbolos. **Nunca distribui prêmios reais.**
+- `GET /api/admin/stats`: contagens protegidas por `X-Admin-Key`. O painel HTML antigo ainda não está integrado a este endpoint.
+- `GET /`: interface do jogo.
+- `GET /docs`: documentação OpenAPI.
+
+### Deploy
+1. No [Railway](https://railway.com/), crie um projeto.
+2. Adicione um serviço **PostgreSQL**.
+3. Adicione serviço **Deploy from GitHub** apontando para `olivste/fortune-texugo` na raiz do repositório.
+4. No serviço da API, configure:
+   - `DATABASE_URL=${{Postgres.DATABASE_URL}}` (ajuste o nome `Postgres` conforme o serviço).
+   - `PHONE_PEPPER`: segredo aleatório com no mínimo 32 caracteres.
+   - `ADMIN_API_KEY`: outro segredo longo, diferente do anterior.
+5. O `Dockerfile` e o `railway.json` fazem build e inicialização. A API cria as tabelas básicas no primeiro start.
+6. Em **Settings → Networking**, gere um domínio público para a API e teste `/health`.
+7. Acesse a raiz do domínio Railway para usar site + API no mesmo lugar.
+
+Se preferir manter **GitHub Pages** como frontend, configure `apiBase` em `assets/content.js` com a URL da API Railway. **Atenção:** isso requer configurar CORS restrito ao domínio do GitHub Pages no backend, antes de usar a integração entre origens; no estado atual, prefira servir tudo no Railway.
+
+### Limitações e segurança
+- O backend está em **modo demonstração exclusivamente**. Não implementa sorteio nem entrega de prêmios, independentemente de variáveis de ambiente.
+- Nome + número não verificam posse do WhatsApp: adicionar OTP, CAPTCHA e rate limiting antes de divulgar publicamente.
+- Os tokens de sessão ficam em `localStorage`; melhorar para sessão segura antes de produção.
+- O painel `admin.html` ainda é legado do Supabase e precisa ser refeito para FastAPI.
+- Não foram executados testes de integração com PostgreSQL/Railway nesta conversa.
+- **Nunca publicar `DATABASE_URL`, `PHONE_PEPPER` ou `ADMIN_API_KEY` no GitHub.**
+- O link de ingressos é `https://www.guicheweb.com.br/64-calourada-da-engenharia-ufes_56060`.
