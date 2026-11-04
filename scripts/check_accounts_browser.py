@@ -72,7 +72,7 @@ def main():
                 assert page.locator('#cpf').bounding_box()['x']<page.locator('#instagram').bounding_box()['x']
                 page.screenshot(path='/tmp/fortune-registration-desktop.png')
                 page.locator('#registration-close').click();page.set_viewport_size({'width':390,'height':844});signup(page,0)
-                assert page.locator('#copy-referral-link').count()==0
+                assert page.locator('#copy-referral-link').is_visible()
                 assert page.locator('#my-referral-code').inner_text()=='@visual_0'
                 assert 'siga' in page.locator('.follow-notice').inner_text()
                 assert 'sem limite' in page.locator('#referral-total').inner_text()
@@ -84,7 +84,8 @@ def main():
                 page.locator('#redeem-close').click();page.locator('#spin').click()
                 page.wait_for_function("document.getElementById('remaining').textContent==='4' && !document.getElementById('spin').disabled")
                 page.reload();page.locator('#account-toolbar').wait_for(state='visible');assert page.locator('#remaining').inner_text()=='4'
-                other=browser.new_context(viewport={'width':320,'height':760});friend=other.new_page();friend.goto(origin+'/?ref=%40visual_0');friend.wait_for_function("document.getElementById('referral-input').value==='visual_0' && !document.getElementById('open-registration').disabled");signup(friend,1)
+                context.grant_permissions(['clipboard-read','clipboard-write']);page.locator('#copy-referral-link').click();page.wait_for_function("document.getElementById('referral-status').textContent==='Link de indicação copiado!'");invite=page.evaluate('navigator.clipboard.readText()');assert invite==origin+'/?ref=%40visual_0'
+                other=browser.new_context(viewport={'width':320,'height':760});friend=other.new_page();friend.goto(invite);friend.wait_for_function("document.getElementById('referral-input').value==='visual_0' && !document.getElementById('open-registration').disabled");signup(friend,1)
                 page.locator('#refresh-referrals').click();page.wait_for_function("document.getElementById('remaining').textContent==='5'")
                 for width in (320,390,1440):
                     page.set_viewport_size({'width':width,'height':900})

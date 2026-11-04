@@ -3,7 +3,7 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const test = require('node:test');
 
-async function browser(fetch, stored = {}, assets = {}, clipboard) {
+async function browser(fetch, stored = {}, assets = {}, clipboard, href = 'https://riscabet.online/') {
   const elements = new Map();
   const element = id => {
     if (!elements.has(id)) elements.set(id, {
@@ -27,7 +27,7 @@ async function browser(fetch, stored = {}, assets = {}, clipboard) {
   const context = vm.createContext({
     window: {matchMedia: () => ({matches: true})},
     document: {getElementById: element, querySelectorAll: () => [], documentElement: element('root')},
-    location: {protocol: 'https:'},
+    location: {protocol: 'https:', href},
     localStorage: {
       getItem: key => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
@@ -351,4 +351,27 @@ test('confirmed referral can refresh exhausted credits and copy personal code',a
  assert.equal(page.element('remaining').textContent,1);
  assert.equal(page.element('spin').disabled,false);
  assert.equal(page.element('end-of-spins').open,false);
+});
+
+
+test('referral link copies the current domain and only the invitation parameter',async()=>{
+ let copied;
+ const page=await browser(async url=>{
+  if(url.endsWith('/config'))return response(state);
+  if(url.endsWith('/session'))return response({...state,spins_left:3,phone_verified:true,referral_code:'@ana.silva'});
+  throw Error(url);
+ },{fortune_demo_session:'test-session'},{},async value=>copied=value,'https://riscabet.online/?other=private#profile');
+ await page.element('copy-referral-link').onclick();
+ assert.equal(copied,'https://riscabet.online/?ref=%40ana.silva');
+ assert.match(page.element('referral-status').textContent,/Link de indicação copiado/);
+});
+
+test('referral link stays available to copy manually if clipboard is unavailable',async()=>{
+ const page=await browser(async url=>{
+  if(url.endsWith('/config'))return response(state);
+  if(url.endsWith('/session'))return response({...state,spins_left:3,phone_verified:true,referral_code:'@ana.silva'});
+  throw Error(url);
+ },{fortune_demo_session:'test-session'});
+ await page.element('copy-referral-link').onclick();
+ assert.match(page.element('referral-status').textContent,/https:\/\/riscabet.online\/\?ref=%40ana.silva/);
 });

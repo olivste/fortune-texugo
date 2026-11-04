@@ -254,3 +254,6 @@ header{border-color:#ffffff0c;padding-bottom:16px}header a{border-color:#ffffff1
 .reel>.symbol:nth-child(2) img{filter:brightness(1.06) drop-shadow(0 2px 4px #89530944)}
 .machine.win .reels::before{border-color:#fff1b0;background:#ffdf7026;box-shadow:0 0 12px #ffcd6988,inset 0 0 18px #ffe47d38}
 @media(max-width:350px){.reel-housing::before,.reel-housing::after{width:8px;height:13px}.reel-housing::before{left:-9px}.reel-housing::after{right:-9px}}
+
+.referral-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}#referral-status{overflow-wrap:anywhere;user-select:text}
+@media(min-width:380px) and (max-width:760px){.referral-actions{grid-template-columns:1fr 1fr}}

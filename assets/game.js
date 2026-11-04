@@ -116,11 +116,14 @@ async function refreshParticipant(){
  if(left>0&&$('end-of-spins').open)$('end-of-spins').close();
  }catch{}
 }
-async function copyReferral(){
- try{await navigator.clipboard.writeText(ownReferralCode);$('referral-status').textContent=ASSETS.text.referralCopied}
- catch{$('referral-status').textContent=ASSETS.text.referralCopyError}
+async function copyReferral(link=false){
+ let value=ownReferralCode;
+ if(link){const url=new URL('/',location.href);url.searchParams.set('ref',ownReferralCode);value=url.href}
+ try{await navigator.clipboard.writeText(value);$('referral-status').textContent=link?ASSETS.text.referralLinkCopied:ASSETS.text.referralCopied}
+ catch{$('referral-status').textContent=link?ASSETS.text.referralLinkCopyError+' '+value:ASSETS.text.referralCopyError}
 }
-$('copy-referral-code').onclick=copyReferral;
+$('copy-referral-code').onclick=()=>copyReferral();
+$('copy-referral-link').onclick=()=>copyReferral(true);
 $('refresh-referrals').onclick=refreshParticipant;
 window.addEventListener?.('focus',refreshParticipant);
 if(typeof setInterval==='function')setInterval(()=>{if(document.visibilityState==='visible')refreshParticipant()},30000);
