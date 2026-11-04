@@ -1,3 +1,83 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin | Fortune Texugo</title><style>body{font:16px Arial;background:#1b0a0d;color:#f4d69c;max-width:760px;margin:50px auto;padding:20px}input,button{padding:12px;margin:5px;background:#32161a;color:#ffe4aa;border:1px solid #b58b4d;border-radius:6px}button{cursor:pointer}section{border:1px solid #ad7e41;padding:20px;border-radius:12px;margin:20px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere}</style></head><body><h1>⚜ FORTUNE TEXUGO — ADMIN</h1><p>Somente administradores cadastrados no Supabase Auth.</p><section><input id="email" type="email" placeholder="E-mail"><input id="password" type="password" placeholder="Senha"><button id="login">Entrar</button></section><section><button id="stats">Atualizar estatísticas</button><pre id="output">Configure o Supabase para utilizar o painel.</pre></section><section><input id="code" placeholder="Código de retirada"><button id="redeem">Confirmar retirada</button></section><script type="module">
-import {createClient} from 'https://esm.sh/@supabase/supabase-js@2';const CONFIG={SUPABASE_URL:'',SUPABASE_ANON_KEY:''};const $=id=>document.getElementById(id);const ok=!!(CONFIG.SUPABASE_URL&&CONFIG.SUPABASE_ANON_KEY);const db=ok?createClient(CONFIG.SUPABASE_URL,CONFIG.SUPABASE_ANON_KEY):null;const out=x=>$('output').textContent=typeof x==='string'?x:JSON.stringify(x,null,2);$('login').onclick=async()=>{if(!ok)return out('Configure SUPABASE_URL e SUPABASE_ANON_KEY');const {error}=await db.auth.signInWithPassword({email:$('email').value,password:$('password').value});out(error?error.message:'Login realizado')};async function action(a,code){if(!ok)return out('Configure Supabase');const {data:{session}}=await db.auth.getSession();if(!session)return out('Faça login');const r=await fetch(CONFIG.SUPABASE_URL+'/functions/v1/admin',{method:'POST',headers:{'Content-Type':'application/json',apikey:CONFIG.SUPABASE_ANON_KEY,Authorization:'Bearer '+session.access_token},body:JSON.stringify({action:a,code})});out(await r.json())}$('stats').onclick=()=>action('stats');$('redeem').onclick=()=>action('redeem',$('code').value.trim().toUpperCase());
-</script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin | Fortune Texugo</title>
+  <link rel="stylesheet" href="assets/admin.css">
+</head>
+<body>
+  <main>
+    <a href="/">← Voltar ao jogo</a>
+    <h1>Fortune Texugo · Admin</h1>
+    <p>Prêmios, chances e retiradas da campanha.</p>
+    <form id="admin-form">
+      <label for="admin-key">Chave administrativa</label>
+      <input id="admin-key" type="password" required autocomplete="off">
+      <p>A chave fica apenas na memória desta página enquanto você estiver conectado. Não é salva no navegador.</p>
+      <button type="submit">Entrar no painel</button>
+    </form>
+    <p id="status" role="status" aria-live="polite">Informe a chave configurada no servidor.</p>
+    <div id="dashboard" hidden>
+      <div class="toolbar"><button id="refresh" type="button">Atualizar painel</button><button id="logout" type="button" class="secondary">Sair</button></div>
+      <section aria-label="Estatísticas">
+        <dl class="stats-grid">
+          <div><dt>Participantes</dt><dd id="players">—</dd></div>
+          <div><dt>Giros realizados</dt><dd id="spins">—</dd></div>
+          <div><dt>Prêmios disponíveis</dt><dd id="stock">—</dd></div>
+          <div><dt>Modo</dt><dd id="mode">—</dd></div>
+        </dl>
+      </section>
+      <form id="probability-form" aria-labelledby="probability-title">
+        <span class="section-kicker">CONTROLE DA CAMPANHA</span><h2 id="probability-title">Porcentagem de ganho</h2>
+        <p>Defina a chance base de ganhar em cada giro elegível. A alteração vale para os próximos giros.</p>
+        <label for="probability">Porcentagem de ganho (%)</label>
+        <div class="percentage-control"><input id="probability" type="number" min="0" max="100" step="0.01" required aria-describedby="chance-preview probability-mode"><span aria-hidden="true">%</span></div>
+        <p id="probability-current"></p><p id="chance-preview"></p>
+        <div id="effective-chances" aria-live="polite"></div>
+        <p id="probability-mode" class="mode-notice"></p>
+        <button type="submit">Salvar porcentagem de ganho</button>
+        <p id="probability-status" role="status"></p>
+        <details><summary>Como a porcentagem funciona</summary><p>A chance base é multiplicada pelo fator de cada prêmio, até o máximo de 100%. O sistema usa o primeiro prêmio ativo com estoque, na ordem configurada. Máximo de um prêmio por participante. Itens pausados ou esgotados não participam.</p></details>
+      </form>
+      <section aria-labelledby="catalog-title">
+        <h2 id="catalog-title">Prêmios da campanha</h2>
+        <p>A quantidade total inclui os prêmios já concedidos. Aumentá-la adiciona unidades; reduzi-la preserva os resultados e retiradas existentes.</p>
+        <div id="prize-types"></div>
+      </section>
+      <form id="new-prize-form">
+        <h2>Adicionar prêmio</h2>
+        <label for="new-name">Nome do prêmio</label><input id="new-name" minlength="2" maxlength="80" required placeholder="Ex.: Pulseira de entrada no bar">
+        <label for="new-symbol">Símbolo nos rolos</label><select id="new-symbol" required></select>
+        <label for="new-priority">Ordem na sequência (menor primeiro)</label><input id="new-priority" type="number" min="1" max="10000" step="1" value="2" required>
+        <label for="new-multiplier">Multiplicador da chance base (2 = dobro)</label><input id="new-multiplier" type="number" min="1" max="100" step="1" value="1" required>
+        <label for="new-quantity">Quantidade total</label><input id="new-quantity" type="number" min="0" max="10000" step="1" required>
+        <label class="checkbox"><input id="new-active" type="checkbox" checked> Disponível para sorteio</label>
+        <button type="submit">Adicionar prêmio</button>
+      </form>
+      <section><h2>CÓDIGOS PROMOCIONAIS</h2><p id="code-metrics"></p><p>Um resgate por conta, sempre. Edições não alteram os giros já concedidos.</p><button id="export-redemptions" type="button">Exportar resgates CSV</button><div id="promo-list"></div></section>
+      <form id="promo-create-form"><h2>Criar código promocional</h2><label for="create-code">Código (deixe vazio para gerar com segurança)</label><input id="create-code" maxlength="40" pattern="[A-Za-z0-9_-]{3,40}"><label for="create-spins">Giros concedidos</label><input id="create-spins" type="number" min="1" max="1000" required><label for="create-limit">Máximo de resgates</label><input id="create-limit" type="number" min="1" max="1000000" required><p>Cupons ativos ficam disponíveis imediatamente, sem data de expiração.</p><label for="create-description">Descrição interna</label><input id="create-description" maxlength="200"><label class="checkbox"><input id="create-active" type="checkbox" checked> Ativo</label><button>Criar código</button></form>
+      <section><h2>USUÁRIOS</h2><form id="users-search-form"><label for="user-search">Pesquisar nome ou Instagram</label><input id="user-search" maxlength="80"><button>Pesquisar</button></form><ul id="account-users"></ul><label for="manage-user">ID da conta selecionada</label><input id="manage-user" type="number" min="1"><form id="adjust-balance-form"><h3>Ajustar saldo</h3><label for="adjust-amount">Quantidade (negativa para remover)</label><input id="adjust-amount" type="number" min="-1000000" max="1000000" required><label for="adjust-reason">Justificativa obrigatória</label><input id="adjust-reason" minlength="5" maxlength="200" required><button>Aplicar ajuste</button></form><form id="account-status-form"><h3>Status da conta</h3><label for="manage-status">Status</label><select id="manage-status"><option value="suspended">Suspensa</option><option value="active">Ativa</option></select><label for="status-reason">Justificativa</label><input id="status-reason" minlength="5" maxlength="200" required><button>Atualizar status</button></form><h3>Histórico selecionado</h3><pre id="admin-history"></pre></section>
+      <details><summary>INDICAÇÕES</summary><ul id="account-referrals"></ul></details><details><summary>ATIVIDADES SUSPEITAS</summary><pre id="suspicious-signals"></pre></details><details><summary>AUDITORIA</summary><pre id="admin-audit"></pre></details>
+      <details><summary>RETENÇÃO DO CPF E BACKUPS</summary><p>A rotina remove CPF, identificador HMAC e fragmento após o prazo. Cópias externas exigem conferência operacional real.</p><button id="run-retention" type="button">Executar rotina de retenção</button><pre id="retention-report"></pre><form id="backup-review-form"><label for="backup-evidence">Evidências de exclusão/retenção de backups, logs e cópias externas (sem dados pessoais)</label><textarea id="backup-evidence" minlength="10" maxlength="1000" required></textarea><button>Registrar conferência</button></form></details>
+      <section aria-labelledby="awarded-title"><h2 id="awarded-title">Prêmios concedidos</h2><ul id="prizes"></ul></section>
+      <details><summary>Cadastros legados e confirmação por telefone</summary><section><h2>Participantes e confirmação de telefone</h2><p>Últimos 100 cadastros. Confirme a posse do telefone por contato com o participante antes de liberar manualmente.</p><ul id="participants"></ul></section>
+      <form id="verify-phone-form"><h2>Confirmar telefone manualmente</h2>
+        <label for="verify-player">ID do participante</label><input id="verify-player" type="number" min="1" required>
+        <label for="verify-phone">Telefone completo com DDD</label><input id="verify-phone" type="tel" required autocomplete="off">
+        <label for="verify-note">Como confirmou a posse do telefone?</label><input id="verify-note" minlength="5" maxlength="200" required placeholder="Ex.: ligação atendida presencialmente">
+        <label class="checkbox"><input id="verify-checked" type="checkbox" required> Confirmei que o participante tem acesso ao telefone. Apenas conhecer o número não é suficiente.</label><button type="submit">Confirmar telefone</button>
+      </form>
+      </details><form id="redeem-form">
+        <h2>Confirmar retirada</h2>
+        <label for="claim-code">Código de retirada</label>
+        <input id="claim-code" required pattern="[A-Za-z0-9]{2,100}" maxlength="100" autocomplete="off">
+        <label class="checkbox"><input type="checkbox" required> Conferi o participante e o código presencialmente. Confirmo a entrega do prêmio.</label>
+        <button type="submit">Confirmar entrega</button>
+      </form>
+    </div>
+  </main>
+  <script src="assets/content.js"></script>
+  <script src="assets/admin.js"></script><script src="assets/admin-accounts.js"></script>
+</body>
+</html>

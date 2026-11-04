@@ -1,29 +1,256 @@
-/* V5 — linguagem visual inspirada na arte da Calourada: cartaz ilustrado, preto, vermelho, ouro e marquise de Vegas */
-:root{--scene-image:none;--poster-red:#b51b23;--poster-gold:#c69b45;--poster-black:#0c0d10}
-body{background:linear-gradient(90deg,#07090b,#171013 22%,#171013 78%,#07090b);color:#fff0d5}
-body:before{opacity:.16;background-image:linear-gradient(30deg,transparent 49%,#b98b3433 50%,transparent 51%);background-size:90px 90px}
-body:after{background:var(--scene-image) center top/cover no-repeat;opacity:.15;filter:contrast(1.1);z-index:-1}
-.wrap{max-width:1140px}header{border-bottom:3px solid #bf923e;position:relative;z-index:5}header b{color:#f2d28a;text-shadow:3px 3px #0b0b0b}
-.intro{position:relative;padding:12px 0 18px}.intro h1{color:#f5e6cf;background:none;-webkit-text-fill-color:initial;filter:drop-shadow(4px 5px 0 #08090c);font-family:Cinzel,serif;font-weight:900;letter-spacing:-1px}
-.intro small{color:#e7c47b}.intro p{color:#fff1d7}
-.curtain{position:absolute;top:0;width:18%;height:150px;pointer-events:none;opacity:.8;background:repeating-linear-gradient(110deg,#680d18 0 15px,#c32531 15px 30px,#8c1221 30px 45px);clip-path:polygon(0 0,100% 0,80% 70%,40% 100%,0 78%);border-bottom:4px solid #c99d4d}.curtain-left{left:-5%;transform:rotate(-8deg)}.curtain-right{right:-5%;transform:scaleX(-1) rotate(-8deg)}
-.machine{background:linear-gradient(90deg,#4c0b14,#b71c27 12%,#9c1924 50%,#ba202b 88%,#4c0b14);border-radius:20px!important;box-shadow:0 0 0 5px #0c0b0c,0 0 0 11px #d5a649,0 0 0 15px #111,0 25px 30px #000b!important}
-.machine:before{border-radius:16px!important;border-color:#dfbd75!important}
-.mascot-medallion{background:#f0e7d7;border:7px solid #0c0b0c;box-shadow:0 0 0 6px #d4a544,0 10px 20px #0009;overflow:visible}
-.mascot-art{width:110px;height:110px;object-fit:contain;filter:drop-shadow(2px 3px #0007)}.mascot-ribbon{font-family:Cinzel,serif;background:#ad1d25}
-.marquee{background:#f1e7d6;color:#a91b23;text-shadow:2px 3px #1113;border:5px solid #111;box-shadow:0 0 0 5px #c99b43,0 0 0 8px #111,inset 0 0 0 2px #d7b76b;font-family:Cinzel,serif}
-.marquee small{color:#121113}.marquee:after{opacity:.4}.bulbs i{background:#ffd05a;border:2px solid #14100d}
-.reel-housing{background:#131314;border:5px solid #c49a45;box-shadow:0 0 0 3px #090909,inset 0 0 0 3px #f3d68b}.reel-ornament{color:#f2d185}
-.reels{background:#161316;border:4px solid #101010}.symbol{background:#f2e7d6;border:2px solid #0b0b0b;box-shadow:inset 0 0 0 2px #e2b75c}.symbol:nth-child(2){background:#fff5dd;outline:3px solid #d2a33f}.symbol img{width:min(78%,75px);height:78%;object-fit:contain;display:block;filter:drop-shadow(1px 3px 1px #0003);pointer-events:none}
-.controls>span{background:#151316;border:2px solid #d7a74a}.spin{background:linear-gradient(#ffe6a1,#d9a63d 55%,#b17a20);color:#1b1210;border:4px solid #0e0d0b;box-shadow:0 6px #845515,0 9px #111;text-shadow:none;font-family:Cinzel,serif}
-.panel{background:#121316;border:3px solid #cba050;border-radius:8px;box-shadow:7px 7px 0 #090909}.panel h2{color:#f0d396}.panel button{background:#c69a46;color:#0b0b0b;border:2px solid #0a0a0a}
-@media(max-width:570px){.curtain{height:95px}.machine{border-radius:15px!important}.mascot-art{width:82px;height:82px}.symbol img{width:75%;height:75%}.marquee{font-size:clamp(21px,6vw,33px)}}
+@import url('./brand.css');
+:root{--poster-gold:#dcb363;--poster-black:#150c11;--surface:#22131b;--cream:#fff0d2;--muted:#c4ada0;--title-gold:#efd080;--title-red:#ff4c57;--scene-image:none}
+body{margin:0;min-height:100vh;color:var(--cream);font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse at 40% 35%,#77212b33,transparent 55%),radial-gradient(ellipse at 45% 85%,#ad68101a,transparent 45%),#130c11}
+body::before,body::after{display:none}
+.wrap{max-width:960px;padding:18px 24px;margin:auto}
+header{max-width:820px;margin:auto;padding:0 0 12px;border:0;border-bottom:1px solid #dcb36320;backdrop-filter:none}
+header b{font:700 19px 'ChunkFive',Georgia,serif;text-shadow:none}
+header a{padding:8px 11px;border:1px solid #dcb36335;border-radius:6px;background:transparent;color:#e2c38e;font:700 10px 'DM Sans',sans-serif;letter-spacing:.7px}
+.game-wordmark{white-space:nowrap;text-transform:none}.title-gold{color:var(--title-gold);-webkit-text-fill-color:var(--title-gold)}.title-red{color:var(--title-red);-webkit-text-fill-color:var(--title-red)}
+.intro{margin:12px auto 10px;padding:0;animation:none;text-align:center}
+.intro h1{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.intro small,.intro p,.intro-stars,.curtain,.bulbs,.reel-ornament,.panel-seal,.cup-icon{display:none}
+.status{padding:5px 9px;border:0;border-radius:0;background:none;color:#bda697;font:500 8px 'DM Sans',sans-serif;letter-spacing:1.2px}
+.layout{display:grid;grid-template-columns:minmax(0,470px) minmax(220px,260px);gap:24px;justify-content:center;align-items:start}
+.game-stack{min-width:0}
+.machine{position:relative;isolation:isolate;width:100%;aspect-ratio:2/3;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible!important;transition:none}
+.machine::before,.machine::after{display:none}
+.cabinet-skin{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:contain;pointer-events:none;filter:drop-shadow(0 18px 24px #0007);z-index:0}
+.marquee{position:absolute;z-index:3;top:30.2%;left:22%;width:56%;height:4.8%;display:grid;place-items:center;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;font:900 clamp(15px,2vw,23px)/1 'ChunkFive',Georgia,serif;letter-spacing:.1px;color:#ffe29c;text-shadow:0 2px 1px #4c100d;overflow:visible}
+.marquee::after,.marquee small{display:none}.marquee .game-wordmark{display:block;white-space:nowrap;font:inherit}
+.reel-housing{position:absolute;z-index:1;top:37.6%;left:10.1%;width:79.8%;height:35.4%;margin:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none}
+.reel-housing::before,.reel-housing::after{display:none}
+.reels{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;height:100%;gap:0;padding:0;border:0;border-radius:5px;background:none;box-shadow:none;overflow:hidden}
+.reels::before{content:"";display:block;position:absolute;inset:33.333% 0;height:auto;z-index:3;border-top:1px solid #ffe5a14d;border-bottom:1px solid #ffe5a14d;background:#fff0a107;pointer-events:none}
+.reels::after{display:none}
+.reel{position:relative;display:grid;grid-template-rows:repeat(3,minmax(0,1fr));width:100%;height:100%;gap:0;background:none;overflow:hidden}
+.symbol{display:grid;place-items:center;grid-template-rows:minmax(0,1fr);grid-template-columns:minmax(0,1fr);width:100%;height:100%;min-height:0;border:0;border-radius:0;background:none;box-shadow:none;text-shadow:none}
+.symbol:nth-child(2){outline:none;background:none}.symbol img{display:block;min-height:0;min-width:0;width:91%;height:89%;max-width:none;max-height:100%;object-fit:contain;filter:drop-shadow(0 4px 3px #5d391d33);pointer-events:none}
+.symbol.is-wild{background:none}.symbol.is-wild img{width:100%;height:100%;max-width:none;filter:drop-shadow(0 4px 3px #5d391d33)}
+.reel-strip{display:grid;will-change:transform}.reel-strip .symbol{height:var(--rolling-cell-height)}.reel.is-spinning .symbol img{filter:blur(.6px)}
+.reel.stopped .symbol{animation:none}
+.controls{position:absolute;z-index:2;top:78%;left:11%;width:78%;height:12.5%;display:grid;grid-template-columns:1fr 90px 1fr;align-items:center;gap:10px;margin:0;padding:0;border:0;background:none;box-shadow:none}
+.controls>.spin-meter{justify-self:center;padding:0;border:0;border-radius:0;background:none;box-shadow:none;text-align:center;color:#ffdf8e;font:900 29px/1.1 'ChunkFive',Georgia,serif;text-shadow:0 2px #682013}
+.spin-meter small{display:block;margin-bottom:5px;color:#e6ba6d;font:700 8px/1.5 'DM Sans',sans-serif;letter-spacing:.7px}
+.spin{display:flex;align-items:center;justify-content:center;flex-direction:column;justify-self:center;width:82px;height:82px;margin:0;padding:0;border:5px solid #e6bd66;border-radius:50%;background:radial-gradient(circle at 33% 20%,#b2e28d,#64ae6e 38%,#286944 88%);box-shadow:0 0 0 2px #9d6426,0 4px 0 #6e321c,inset 0 0 0 2px #dcdf9b;color:#fff0bd;text-shadow:0 2px #2c633e;font:900 9px/1 'DM Sans',sans-serif;letter-spacing:1px;cursor:pointer;transition:transform .15s,filter .15s}
+.spin-arrow{display:block;font:400 46px/.9 Georgia,serif;margin-bottom:4px;letter-spacing:0}.spin:not(:disabled):hover{filter:brightness(1.1);transform:translateY(-1px)}.spin:not(:disabled):active{transform:translateY(2px)}.spin:disabled{opacity:1;filter:saturate(.7) brightness(.85);cursor:not-allowed}
+.controls>.machine-stamp{justify-self:center;display:grid;place-items:center;width:39px;height:39px;padding:0;border:1px solid #e5b56966;border-radius:50%;background:none;box-shadow:none;color:#e6b96e88;font:900 16px Georgia,serif;transform:rotate(-12deg)}
+.wild-guide{display:flex;align-items:center;justify-content:center;gap:8px;max-width:390px;margin:4px auto 0;padding:0 10px;border:0;background:none;color:#ad9588;font:400 9px/1.6 'DM Sans',sans-serif}.wild-guide strong{flex-shrink:0;color:#cfad74;font:bold italic 13px Georgia,serif}
+.message{min-height:0;margin:5px 0 12px;padding:0;text-align:center;color:#ccb5a2;font:400 11px/1.6 'DM Sans',sans-serif}
+.side{padding-top:30px;min-width:0}.panel{margin:0 0 12px;padding:18px;border:1px solid #dcb36329;border-radius:10px;background:#25171fd9;box-shadow:none}.panel h2{margin:0 0 10px;color:#e9d5b4;font:700 16px 'ChunkFive',Georgia,serif;text-shadow:none}.panel p{margin:8px 0;font:400 11px/1.75 'DM Sans',sans-serif;color:var(--muted)}
+.panel label{display:block;margin:12px 0 5px;color:#c9ad8d;font:700 8px 'DM Sans',sans-serif;letter-spacing:.8px}.panel input{width:100%;padding:11px;border:1px solid #dcb3633d;border-radius:6px;background:#170f15;color:var(--cream);font:400 13px 'DM Sans',sans-serif}.panel button{width:100%;padding:12px;border:1px solid #e6c589;border-radius:6px;background:#d4b57c;box-shadow:none;color:#2c1820;font:700 11px 'DM Sans',sans-serif}
+.prize-panel{text-align:left}.prize-panel summary{list-style:none;cursor:pointer;color:#e9d5b4;font:700 14px 'ChunkFive',Georgia,serif}.prize-panel summary::-webkit-details-marker{display:none}.prize-panel summary::after{content:"+";float:right;color:#c9aa71}.prize-panel[open] summary::after{content:"−"}.panel-details{padding-top:8px}.prize{padding:10px;border:1px solid #83957355;border-radius:6px;background:#283025;color:#e2eadc;font-size:11px}
+#ticket,.ticket-cta{display:block;margin-top:13px;padding:11px;border:1px solid #dcb36355;border-radius:6px;background:transparent;box-shadow:none;text-align:center;text-decoration:none;color:#e8cf9f;font:700 10px/1.4 'DM Sans',sans-serif;letter-spacing:.5px;transition:background .15s}#ticket:hover,.ticket-cta:hover{background:#dcb36315;transform:none}
+.foot{margin:auto;padding:14px 0;font-size:9px;line-height:1.8;color:#9c887b;text-align:center}
+@media(max-width:760px){.wrap{padding:12px 16px;max-width:510px}.layout{grid-template-columns:minmax(0,470px);gap:8px}.side{padding:0 6px;display:block}.intro{margin:6px auto 8px}.panel{padding:16px}.controls{grid-template-columns:1fr 76px 1fr;gap:6px}.spin{width:clamp(64px,18vw,78px);height:auto;aspect-ratio:1}.spin-arrow{font-size:39px}.controls>.spin-meter{font-size:26px}.marquee{font-size:clamp(14px,4.2vw,21px)}.message{font-size:11px}.wild-guide{font-size:9px}}
+@media(max-width:350px){.wrap{padding:10px 9px}.marquee{font-size:13px}.controls{grid-template-columns:1fr 66px 1fr}.spin{width:62px;border-width:4px}.spin-arrow{font-size:33px}.controls>.spin-meter{font-size:23px}.spin-meter small{font-size:7px}.controls>.machine-stamp{width:30px;height:30px;font-size:13px}}
+/* Popup compacto, sem marquise ou elementos decorativos repetidos. */
+.end-of-spins{position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:440px;max-height:calc(100dvh - 32px);padding:0;overflow-y:auto;border:1px solid #c9aa7166;border-radius:16px;background:#321d26;box-shadow:0 20px 70px #0006;color:var(--cream);text-align:center}
+.end-of-spins:not([open]){display:none}
+.end-of-spins::backdrop{background:#0c0b0ec4;backdrop-filter:blur(5px)}
+.popup-poster{padding:30px 30px 28px;background:linear-gradient(155deg,#44242d,#281c24)}
+.popup-brand{margin:0;color:var(--poster-gold);font:700 9px/1.5 'DM Sans',sans-serif;letter-spacing:3px}
+.popup-hero{display:flex;justify-content:center;margin:26px 0 24px}
+.popup-medallion{display:grid;place-items:center;width:76px;height:76px;border:1px solid #c9aa7188;border-radius:50%;background:#e9dfce}
+.popup-medallion img{display:block;width:66px;height:66px;object-fit:contain}
+.popup-star,.popup-kicker,.popup-event-star,.popup-event-label{display:none}
+.end-of-spins h2{max-width:18ch;margin:0 auto;color:var(--cream);font:700 clamp(25px,5vw,30px)/1.25 'ChunkFive',Georgia,serif;letter-spacing:-.6px;text-wrap:balance}
+.popup-description{max-width:36ch;margin:16px auto 22px;color:#d4bfb3;font:400 13px/1.8 'DM Sans',sans-serif;text-wrap:pretty}
+.popup-event{margin:0 0 24px;padding-top:16px;border-top:1px solid #c9aa712b}
+.popup-event p{margin:0;color:#cbb795;font:400 10px/1.6 'DM Sans',sans-serif;letter-spacing:.3px}
+.end-of-spins .ticket-cta{margin:0;padding:15px 10px;border:1px solid #d9bd89;background:#d4b57c;color:#2c1820;letter-spacing:.7px}
+.end-of-spins .ticket-cta:hover{background:#e1c48f}
+.popup-close{position:absolute;top:12px;right:12px;padding:6px 8px;border:0;border-radius:4px;background:transparent;color:#cbb9aa;font:400 10px/1.5 'DM Sans',sans-serif;cursor:pointer}
+.popup-close:hover{background:#ffffff08;color:var(--cream)}
+.popup-close:focus-visible,.ticket-cta:focus-visible,.spin:focus-visible{outline:2px solid #e8cf9f;outline-offset:3px}
+html:has(.end-of-spins[open]){overflow:hidden}
+@media(max-width:570px){.popup-poster{padding:30px 24px 24px}}
+@media(prefers-reduced-motion:no-preference){.end-of-spins[open]{animation:popup-arrive .2s ease-out both}@keyframes popup-arrive{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
 
-/* Typography update: bold vintage slab serif instead of the former Cinzel title */
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@700;900&family=Bevan&display=swap');
-.intro h1,.marquee,.marquee span[data-text="gameTitle"]{font-family:Bevan,'Roboto Slab',Georgia,serif!important;font-weight:400!important;letter-spacing:-1.4px!important}
-.intro h1{text-transform:uppercase;line-height:1.12!important}
-.marquee{font-size:clamp(23px,3.9vw,42px)!important;letter-spacing:-1px!important}
-#ticket{display:block;text-align:center;margin-top:15px;padding:14px 12px;border:2px solid #f0d59a;border-radius:8px;background:#bb2029;color:#fff0cf;text-decoration:none;font:900 15px 'Roboto Slab',serif;box-shadow:4px 4px 0 #080808;transition:transform .18s}
-#ticket:hover{transform:translateY(-3px);background:#dc3037}
-@media(max-width:570px){.marquee{font-size:clamp(20px,5.4vw,31px)!important}.intro h1{font-size:clamp(32px,8.5vw,57px)!important}}
+.prize-code-box{margin:0 0 24px;padding:16px 12px;border:1px solid #c9aa7140;border-radius:8px;background:#160f1644}
+.prize-code-box label{display:block;margin-bottom:10px;color:var(--poster-gold);font:700 9px/1.5 'DM Sans',sans-serif;letter-spacing:1px}
+.prize-code-box output{display:block;overflow-wrap:anywhere;color:var(--cream);font:600 13px/1.8 ui-monospace,monospace;letter-spacing:1px;user-select:all}
+#prize-instagram[hidden],#prize-details[hidden]{display:none}
+#prize-details{background:transparent;color:var(--poster-gold);border:1px solid #c9aa7166;font-size:10px}
+
+.copy-code{width:100%;margin-top:14px;padding:10px 12px;min-height:44px;border:1px solid #c9aa7166;border-radius:6px;background:transparent;color:#e8cf9f;font:700 11px/1.4 'DM Sans',sans-serif;cursor:pointer}
+.copy-code:focus-visible{outline:2px solid #e8cf9f;outline-offset:3px}
+#copy-code-status{margin:8px 0 0;color:var(--cream);font-size:12px;line-height:1.6}
+#copy-code-status:empty{display:none}
+
+.prize-panel summary:focus-visible{outline:2px solid #dcb363;outline-offset:4px}
+.machine.win{box-shadow:none}
+.machine.win .cabinet-skin{filter:drop-shadow(0 0 14px #e8b35b77)}
+
+/* Cadastro em uma janela, com a máquina permanecendo como foco. */
+.registration-start{max-width:260px;margin:7px auto 12px;text-align:center}
+.registration-start[hidden]{display:none}
+.registration-start>button{width:100%;min-height:44px;padding:11px 16px;border:1px solid #eac979;border-radius:7px;background:linear-gradient(#eaca85,#c49b55);color:#32151a;font:800 11px/1.4 'DM Sans',sans-serif;letter-spacing:.7px;box-shadow:0 3px 0 #74451e;cursor:pointer}
+.registration-start>button:disabled{opacity:.5;cursor:wait}.registration-start>p{margin:7px 0 0;color:#ac9383;font:400 9px/1.5 'DM Sans',sans-serif}
+.registration-dialog{position:fixed;inset:0;margin:auto;width:calc(100% - 32px);max-width:370px;max-height:calc(100dvh - 32px);padding:42px 26px 24px;border:1px solid #d7b16c;border-radius:14px;background:linear-gradient(155deg,#41232c,#24171f);box-shadow:0 20px 80px #0009;color:var(--cream);overflow-y:auto}
+.registration-dialog:not([open]){display:none}.registration-dialog::backdrop{background:#10090dd4;backdrop-filter:blur(6px)}
+.registration-dialog h2{margin:0 0 10px;font:700 22px 'ChunkFive',Georgia,serif;color:#f0d49c}
+.registration-dialog p{color:#c8b0a1;font:400 12px/1.7 'DM Sans',sans-serif}
+.registration-dialog label{display:block;margin:17px 0 6px;color:#d9bd92;font:700 9px/1.4 'DM Sans',sans-serif;letter-spacing:.7px}
+.registration-dialog input{display:block;width:100%;padding:13px;border:1px solid #c9aa7155;border-radius:7px;background:#180f16;color:var(--cream);font:400 16px 'DM Sans',sans-serif}
+.registration-dialog form>button{width:100%;margin-top:20px;padding:13px;border:1px solid #e6c589;border-radius:7px;background:#d4b57c;color:#2c1820;font:800 12px 'DM Sans',sans-serif;cursor:pointer}
+.registration-dialog input:focus-visible,.registration-start button:focus-visible{outline:2px solid #eac979;outline-offset:3px}
+html:has(.registration-dialog[open]){overflow:hidden}
+
+#registration-error:empty{display:none}
+.registration-dialog #registration-error{color:#ffb3a3;font-weight:700}
+
+/* Aligned inventory and verified referrals. */
+.prize-list{list-style:none;padding:0;margin:16px 0;text-align:left}.prize-list li{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:10px 0;border-bottom:1px solid #d7ae4933}.prize-list span{overflow-wrap:anywhere}.prize-list strong{min-width:2ch;text-align:right;font-variant-numeric:tabular-nums;color:#f4d587}
+#referral-panel,#verification-start{max-width:470px;margin:16px auto;padding:18px;border:1px solid #b9894555;border-radius:14px;background:#25161b;text-align:center;box-sizing:border-box}#referral-panel h3{margin:0 0 10px;color:#f4d587}#referral-panel p{font-size:.9rem;line-height:1.5}#my-referral-code{display:block;padding:12px;letter-spacing:2px;overflow-wrap:anywhere;color:#ffe7a4;font-weight:700}#referral-panel button{margin:4px;padding:10px;font-size:.75rem}#verification-dialog{width:min(430px,calc(100vw - 32px));box-sizing:border-box}#verification-dialog form{display:grid;gap:10px;margin-top:18px}#verification-dialog input{min-width:0;width:100%;box-sizing:border-box}#verification-status,#sms-availability{font-size:.9rem;line-height:1.5} [hidden]{display:none!important}
+
+.account-toolbar{max-width:470px;margin:14px auto;padding:14px;border:1px solid #b9894555;border-radius:12px;text-align:center;background:#25161b}.account-toolbar span{display:block;font-size:12px;color:#dfc69f;margin-bottom:10px}.account-toolbar button,#login-signup{padding:10px;margin:3px;border:1px solid #b98945;border-radius:6px;background:#382027;color:#f4d587;font-size:11px;cursor:pointer}.registration-dialog .acceptance{display:flex;align-items:flex-start;gap:9px;line-height:1.6;font-size:11px;letter-spacing:0}.registration-dialog .acceptance input{width:17px;height:17px;flex-shrink:0;margin:2px 0}.registration-dialog a{color:#f4d587}#wallet-history{padding-left:16px;font-size:11px;line-height:1.8}#referral-panel h2{font-size:18px}#login-error{color:#ffb3a3}#promo-status{overflow-wrap:anywhere}
+
+/* Account layout: compact forms, aligned sidebar and consistent buttons. */
+*,*::before,*::after{box-sizing:border-box}
+.layout{grid-template-columns:minmax(0,470px) minmax(0,280px);gap:28px}
+.side{padding-top:0;display:flex;flex-direction:column;gap:14px}
+.side>.panel{width:100%;margin:0}
+#referral-panel{width:100%;max-width:none;margin:0;padding:20px;text-align:left;border-radius:10px}
+#referral-panel h2{margin:0 0 10px;font:700 17px/1.3 'ChunkFive',Georgia,serif;color:#f0d49c}
+#referral-panel p{margin:10px 0;font:400 12px/1.6 'DM Sans',sans-serif;color:#c4ada0}
+#my-referral-code{padding:12px 0;letter-spacing:.5px;font-size:16px}
+.referral-actions{display:grid;grid-template-columns:1fr;gap:8px}
+#referral-panel button{width:100%;min-height:40px;margin:0;padding:10px 12px;border:1px solid #c6a05c70;border-radius:6px;background:#362129;color:#f0d49c;font:700 10px/1.4 'DM Sans',sans-serif;letter-spacing:.3px;cursor:pointer}
+#referral-panel button:hover{background:#49303a}#referral-panel #refresh-referrals{margin-top:6px;background:transparent}
+#referral-status:empty{display:none}
+.account-toolbar{width:100%;max-width:none;margin:0 0 12px;padding:12px 14px;text-align:left;border-radius:10px}
+.account-toolbar span{margin-bottom:8px;overflow-wrap:anywhere}
+.account-toolbar>div{display:flex;flex-wrap:wrap;gap:6px}
+.account-toolbar button{margin:0;min-height:36px;padding:8px 10px;font-weight:700;font-size:10px}
+.follow-notice{margin:0 0 12px;padding:10px 14px;border-left:2px solid #dcb363;background:#dcb3630b;border-radius:0 6px 6px 0;color:#c4ada0;font:400 11px/1.6 'DM Sans',sans-serif}
+.follow-notice a{color:#f0d49c;font-weight:700;text-decoration:none;white-space:nowrap}
+.registration-dialog{box-sizing:border-box;width:calc(100% - 32px);max-height:calc(100dvh - 40px);padding:48px 26px 24px}
+#registration{max-width:600px}
+#registration h2{font-size:24px;line-height:1.2;margin:0 0 8px}
+#registration-copy{margin:0 0 22px;max-width:44ch}
+#form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 18px}
+.account-field{display:flex;flex-direction:column;gap:7px;min-width:0}
+.field-name,.field-referral-input{grid-column:1/-1}
+#form .account-field label{margin:0;font-size:10px;line-height:1.4}
+#form .account-field input{width:100%;min-width:0;height:44px;padding:10px 12px;font-size:14px;border-radius:6px}
+#form>.acceptance{grid-column:1/-1;display:grid;grid-template-columns:17px minmax(0,1fr);gap:10px;align-items:start;margin:0;font:400 12px/1.6 'DM Sans',sans-serif;color:#c8b0a1;letter-spacing:0}
+#form>.acceptance input{width:17px;height:17px;padding:0;margin:2px 0}
+#form>.acceptance span{min-width:0;display:block}
+#form>.acceptance a{display:inline;white-space:normal}
+#form>button{grid-column:1/-1;margin:2px 0 0;min-height:44px}
+.registration-dialog .popup-close{top:12px;right:14px;min-height:28px;padding:4px 6px;border:0;background:transparent;box-shadow:none;color:#cbb9aa;font:400 11px/1.5 'DM Sans',sans-serif}
+#prize-popup .popup-poster{padding-top:42px}
+#prize-popup .popup-hero{margin:12px 0 18px}
+#prize-popup h2{font-size:27px}
+#prize-popup .popup-description{font-size:14px;line-height:1.7}
+#prize-popup .prize-code-box{border-style:dashed;background:#160f1666}
+@media(max-width:760px){.layout{grid-template-columns:minmax(0,470px);gap:18px}.side{padding:0;gap:12px}.account-toolbar{margin-top:0}#referral-panel{padding:18px}.referral-actions{grid-template-columns:1fr 1fr}}
+@media(max-width:520px){#registration{padding:44px 20px 22px}#form{grid-template-columns:minmax(0,1fr);gap:14px}#registration h2{font-size:22px}.account-field{grid-column:1/-1}#form .account-field input{font-size:16px}#registration-copy{margin-bottom:18px}.registration-dialog{max-height:calc(100dvh - 24px)}}
+@media(min-width:761px){.wrap{width:100%;max-width:960px;padding:18px 24px}.layout{grid-template-columns:minmax(0,470px) minmax(0,280px);justify-content:center}.controls{grid-template-columns:1fr 90px 1fr}.account-toolbar>div{flex-wrap:nowrap}}
+
+/* Shared cabinet palette across the player controls, cards and dialogs. */
+:root{--card-edge:#bb8a425c;--card-surface:linear-gradient(145deg,#481923e8,#29141ceF 78%);--card-gold:#edcc85;--card-copy:#cdb5a5}
+body{background:radial-gradient(ellipse at 42% 42%,#7b1a2633,transparent 52%),radial-gradient(ellipse at 52% 100%,#b97b1910,transparent 54%),#150d12}
+.side>.panel,#referral-panel,.account-toolbar{border:1px solid var(--card-edge);border-radius:12px;background:var(--card-surface);box-shadow:inset 0 1px 0 #f6d7980b,0 8px 22px #08040724}
+.side>.panel,#referral-panel{padding:20px}
+.side .panel h2,#referral-panel h2,.prize-panel summary{color:var(--card-gold);font:700 14px/1.4 'ChunkFive',Georgia,serif;letter-spacing:.35px;text-transform:uppercase;text-shadow:0 1px #1b070c}
+#referral-panel p,.side .panel p{color:var(--card-copy);font-size:12px;line-height:1.7}
+#referral-panel h2{margin-bottom:12px}
+#my-referral-code{margin:16px 0 14px;padding:13px 12px;border:1px solid #d8b36538;border-radius:8px;background:#190e1480;color:#f9dd9e;font:700 17px/1.4 'DM Sans',sans-serif;text-align:center;letter-spacing:.3px}
+.account-toolbar{padding:14px 16px}.account-toolbar span{color:#e8cfa5;font-size:12px}
+.account-toolbar button,#referral-panel button,#ticket,.registration-dialog form>button,#login-signup{border-radius:7px;min-height:40px;transition:background .15s,border-color .15s,box-shadow .15s}
+.account-toolbar button,#referral-panel button,#ticket,#login-signup{border:1px solid #c89a505c;background:linear-gradient(#62243088,#3a1822aa);color:#efd499;box-shadow:inset 0 1px 0 #fff0ba08;font-weight:700;letter-spacing:.4px}
+.account-toolbar #open-redeem,#referral-panel #copy-referral-code,.registration-dialog form>button{border:1px solid #f0d396;background:linear-gradient(135deg,#f0d396,#c5984c);color:#35161c;box-shadow:inset 0 1px 0 #fff4c480,0 2px 6px #12060933}
+.account-toolbar #account-logout{border-color:transparent;background:transparent;color:#bb9e8e;box-shadow:none}
+#referral-panel #refresh-referrals{min-height:34px;margin-top:12px;border-color:transparent;background:transparent;box-shadow:none;color:#c9ae86;font-size:9px}
+.account-toolbar button:hover,#referral-panel button:hover,#ticket:hover,#login-signup:hover{border-color:#e7c37d;background-color:#742b39;box-shadow:0 0 12px #d9a74712}
+#referral-panel #copy-referral-code:hover,.account-toolbar #open-redeem:hover{background:#efd499}
+#referral-counts{padding-top:12px;border-top:1px solid #d8b36524}#referral-panel #referral-total{font-size:10px;color:#a98d7d}
+.follow-notice{padding:11px 14px;border:1px solid #bb8a423d;border-radius:8px;background:linear-gradient(90deg,#5c24252e,#25141a66);color:#bda392}
+.follow-notice a{color:#efcc82}.side #ticket{margin-top:16px}
+.registration-dialog,.end-of-spins{border-color:#ba8b4e;background:linear-gradient(145deg,#461b25,#24131c 85%);box-shadow:0 22px 70px #0008,inset 0 1px 0 #eac88b12}
+.registration-dialog h2,.end-of-spins h2{color:#edcc85}
+.registration-dialog input{border-color:#c49d5f44;background:#190f16}
+.account-toolbar button:focus-visible,#referral-panel button:focus-visible,#ticket:focus-visible{outline:2px solid #f0d396;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.account-toolbar button,#referral-panel button,#ticket,.registration-dialog form>button,#login-signup{transition:none}}
+
+.referral-actions{grid-template-columns:minmax(0,1fr)}
+
+.controls>.spin-meter{display:flex;align-items:baseline;justify-content:center;gap:5px;white-space:nowrap}.spin-meter small{display:inline;margin:0;font-size:9px;letter-spacing:.2px}#remaining{font-variant-numeric:tabular-nums}
+
+/* Risca Faca: black canvas, red surfaces and bold yellow accents. */
+:root{--poster-gold:var(--rf-yellow);--poster-black:var(--rf-black);--surface:#190909;--cream:#fff9e9;--muted:#d8c7bc;--title-gold:var(--rf-yellow);--title-red:var(--rf-red);--card-edge:#e2a10075;--card-surface:linear-gradient(145deg,#40100e,#1d0909 84%);--card-gold:var(--rf-yellow-light);--card-copy:#dfc8bb}
+body{background:radial-gradient(ellipse at 44% 35%,#b817172b,transparent 58%),radial-gradient(ellipse at 56% 92%,#e2a1000c,transparent 55%),#080505;color:var(--cream);font-family:var(--font-body)}
+header{border-bottom-color:#e2a10036}
+header b,.game-wordmark,.marquee,.controls>.spin-meter,.side .panel h2,#referral-panel h2,.prize-panel summary,.registration-dialog h2,.end-of-spins h2{font-family:var(--font-display);font-weight:400;font-synthesis:none}
+header b{font-size:24px;letter-spacing:-.5px}
+header a{color:var(--rf-yellow-light);border-color:#e2a1005c;background:#280b0b}
+.marquee{font-size:clamp(15px,2vw,23px);color:#ffdc73}
+.status{color:#d1b68d;letter-spacing:1.4px}
+.side>.panel,#referral-panel,.account-toolbar{background:var(--card-surface);border-color:var(--card-edge);border-radius:10px;box-shadow:inset 0 2px 0 #ffca3810,0 9px 25px #0004}
+.side .panel h2,#referral-panel h2,.prize-panel summary{color:var(--rf-yellow-light);font-size:17px;line-height:1.3;letter-spacing:.1px}
+.side .panel p,#referral-panel p{color:var(--card-copy)}
+.account-toolbar{border-top:2px solid var(--rf-red)}
+.account-toolbar span{color:#fff0d6}
+#my-referral-code{background:#0805058c;border-color:#e2a10059;color:var(--rf-yellow-light);border-radius:6px}
+.account-toolbar button,#referral-panel button,#ticket,#login-signup,.registration-dialog form>button,.registration-start>button,.copy-code{font-family:var(--font-display);font-weight:400;font-synthesis:none;letter-spacing:.25px;line-height:1.4}
+.account-toolbar button,#referral-panel button,#ticket,#login-signup,.copy-code{background:#590d0b;border:1px solid #e2a10085;color:var(--rf-yellow-light);box-shadow:inset 0 1px 0 #ffca3810}
+.account-toolbar #open-redeem,#referral-panel #copy-referral-code,.registration-dialog form>button,.registration-start>button,.end-of-spins .ticket-cta{background:linear-gradient(125deg,var(--rf-yellow-light),var(--rf-yellow));border:1px solid var(--rf-gold);color:#230700;box-shadow:0 3px 0 #8b0500,inset 0 1px 0 #ffffff50}
+.account-toolbar button:hover,#referral-panel button:hover,#ticket:hover,#login-signup:hover,.copy-code:hover{background:var(--rf-red-deep);border-color:var(--rf-yellow)}
+.account-toolbar #open-redeem:hover,#referral-panel #copy-referral-code:hover,.registration-dialog form>button:hover,.registration-start>button:hover{background:var(--rf-yellow-light);color:#230700}
+.account-toolbar #account-logout{background:transparent;color:#d3b89d;border-color:transparent;box-shadow:none}
+#referral-panel #refresh-referrals{background:transparent;border-color:transparent;color:#d8b579;box-shadow:none}
+.follow-notice{border:1px solid #e2a10050;border-left:3px solid var(--rf-yellow);background:linear-gradient(90deg,#9c17112a,#19090980);color:#dbc5b7}
+.follow-notice a,.registration-dialog a{color:var(--rf-yellow-light)}
+.prize-list strong{color:var(--rf-yellow)}
+.prize-list li,#referral-counts{border-color:#e2a10033}
+.spin{background:radial-gradient(circle at 32% 20%,#ffdf7a,var(--rf-yellow) 52%,var(--rf-gold));border-color:#ffdb65;color:#4a0a04;text-shadow:0 1px #ffffff40;box-shadow:0 0 0 2px #9b5317,0 4px 0 #67120c,inset 0 0 0 2px #fff1ba;font-family:var(--font-display);font-weight:400}
+.spin-arrow{font-family:Georgia,serif;font-weight:400}
+.spin-meter small{color:var(--rf-yellow-light);font-family:var(--font-display);font-weight:400}
+.registration-dialog,.end-of-spins{background:linear-gradient(150deg,#48100d,#170707 85%);border-color:var(--rf-gold);box-shadow:0 24px 80px #000b,inset 0 2px 0 #ffca3814}
+.registration-dialog h2,.end-of-spins h2{color:var(--rf-yellow-light)}
+.registration-dialog input{background:#0e0606;border-color:#e2a1004d;color:var(--rf-white)}
+.registration-dialog p,.popup-description{color:#dfc8bb}
+.popup-poster{background:linear-gradient(150deg,#48100d,#170707 85%)}
+.prize-code-box,#prize-popup .prize-code-box{background:#08050585;border-color:#e2a10080}
+.foot{color:#ad9481}
+@media(max-width:760px){.marquee{font-size:clamp(14px,4.2vw,21px)}}
+@media(max-width:350px){.marquee{font-size:13px}}
+
+/* Quieter framing: let the cabinet carry the colour and ornament. */
+body{background:radial-gradient(ellipse at 39% 44%,#8b05001a,transparent 53%),#100e0e}
+header{border-color:#ffffff0c;padding-bottom:16px}header a{border-color:#ffffff1c;background:transparent;color:#e6c98a}
+.intro{margin:14px auto 12px}.status{font-size:8px;color:#ad9a85;letter-spacing:1.2px}
+.account-toolbar{display:flex;justify-content:space-between;align-items:center;gap:16px;max-width:778px;margin:0 auto 8px;padding:8px 0;background:none;border:0;border-bottom:1px solid #ffffff0c;border-radius:0;box-shadow:none}
+.account-toolbar span{margin:0;font-size:12px;line-height:1.6;color:#d7d0c7}
+.account-toolbar>div{gap:6px;flex-shrink:0}
+.account-toolbar button,.account-toolbar #open-redeem,.account-toolbar #account-logout{min-height:34px;margin:0;padding:8px 10px;border:1px solid transparent;border-radius:6px;background:transparent;box-shadow:none;color:#b9ada0;font:700 10px/1.5 var(--font-body);letter-spacing:0}
+.account-toolbar #open-redeem{background:#b8171726;border-color:#b8171740;color:#efc694}
+.account-toolbar button:hover,.account-toolbar #open-redeem:hover{background:#ffffff08;border-color:#ffffff20;color:#fff0cf;box-shadow:none}
+.follow-notice{max-width:778px;margin:0 auto 14px;padding:0;background:none;border:0;border-radius:0;text-align:left;font-size:10px;color:#95887b}.follow-notice a{color:#d4b778;font-weight:700}
+.side{gap:16px;padding-top:14px}.side>.panel,#referral-panel{padding:20px;background:#1b1717;border:1px solid #ffffff0d;border-radius:12px;box-shadow:none}
+.side .panel h2,#referral-panel h2,.prize-panel summary{font-family:var(--font-display);font-size:15px;font-weight:400;letter-spacing:0;line-height:1.4;text-transform:none;color:#e8d8b8;text-shadow:none}
+.side .panel p,#referral-panel p{font-size:12px;line-height:1.7;color:#b9aaa0}.panel-details{padding-top:12px}
+.prize-panel summary::after{font:400 16px var(--font-body);color:#8a7964}
+.prize-list{margin:14px 0}.prize-list li{padding:10px 0;border-bottom-color:#ffffff0b;font-size:12px;line-height:1.5;color:#e5d8c6}.prize-list strong{color:#d6b46e;font-size:13px}
+.game-rules{margin-top:10px;padding-top:12px;border-top:1px solid #ffffff0b}.game-rules>summary{font:400 11px/1.5 var(--font-body);color:#aa9580;list-style:revert}.game-rules>summary::after{content:none}.side .game-rules p{font-size:11px;color:#9f9085}
+#winner{margin-top:16px;padding:12px 0 0;border:0;border-top:1px solid #d6b46e33;border-radius:0;background:none;color:#e1cfaa;font:400 12px/1.7 var(--font-body);overflow-wrap:anywhere}
+#prize-details,#ticket,#referral-panel button,#referral-panel #copy-referral-code{min-height:40px;padding:11px 12px;border:1px solid #d2aa6238;border-radius:6px;background:transparent;box-shadow:none;color:#ddc08a;font:700 10px/1.5 var(--font-body);letter-spacing:.25px}
+#prize-details{margin-top:14px;width:100%}#ticket:hover,#prize-details:hover,#referral-panel #copy-referral-code:hover{background:#d2aa620c;border-color:#d2aa6270;box-shadow:none}
+#my-referral-code{padding:10px 0;margin:10px 0 14px;background:none;border:0;font-size:18px;color:#ebcd93;text-align:left}
+#referral-counts{border-color:#ffffff0b}#referral-panel #refresh-referrals{min-height:30px;margin:4px 0 0;padding:4px 0;text-align:left;color:#a59178;font-family:var(--font-body);font-size:10px}
+#referral-panel #referral-total{font-size:10px;color:#877c71}.side #ingressos{background:#221817;border-color:#b817171f}.side #ingressos h2{max-width:20ch}.side #ingressos p{font-size:10px;color:#ac9a8c;letter-spacing:.4px}
+.registration-start>button{background:#ccab6a;border-color:#ccab6a;box-shadow:none;font-family:var(--font-body)}
+.foot{font-size:9px;color:#74695f}
+@media(max-width:760px){.account-toolbar,.follow-notice{max-width:470px}.account-toolbar{padding:8px 0;flex-wrap:wrap;gap:6px}.account-toolbar>div{flex-wrap:wrap}.side{padding-top:0}.follow-notice{font-size:10px;line-height:1.7;margin-bottom:8px}.side>.panel,#referral-panel{padding:18px}.layout{gap:14px}}
+@media(min-width:761px){.account-toolbar>div{flex-wrap:nowrap}}
+
+/* Winning line: a fixed gold frame across the central row of the three reels. */
+.reels::before{inset:auto;top:33.333333%;left:0;right:0;bottom:auto;height:33.333333%;z-index:4;border:0;border-top:2px solid #ffd45c;border-bottom:2px solid #ffd45c;border-radius:2px;background:linear-gradient(90deg,#ffcb3817,#ffe9a52b 50%,#ffcb3817);box-shadow:0 0 8px #ffbc3566,inset 0 0 14px #ffd35a26;pointer-events:none}
+.reel-housing::before,.reel-housing::after{content:"";display:block;position:absolute;top:50%;width:10px;height:16px;transform:translateY(-50%);z-index:6;background:linear-gradient(#fff1b5,#ffbd24);filter:drop-shadow(0 1px 2px #521a07);pointer-events:none}
+.reel-housing::before{left:-11px;clip-path:polygon(0 0,100% 50%,0 100%)}
+.reel-housing::after{right:-11px;clip-path:polygon(100% 0,0 50%,100% 100%)}
+.reel>.symbol:nth-child(2) img{filter:brightness(1.06) drop-shadow(0 2px 4px #89530944)}
+.machine.win .reels::before{border-color:#fff1b0;background:#ffdf7026;box-shadow:0 0 12px #ffcd6988,inset 0 0 18px #ffe47d38}
+@media(max-width:350px){.reel-housing::before,.reel-housing::after{width:8px;height:13px}.reel-housing::before{left:-9px}.reel-housing::after{right:-9px}}

@@ -1,0 +1,15 @@
+/* Risca Faca palette sampled visually from the supplied brand reference.
+   Edit these tokens to customize the site without touching game logic. */
+@font-face{font-family:'ChunkFive';src:url('./fonts/ChunkFive-Regular.ttf') format('truetype');font-style:normal;font-weight:400;font-display:swap}
+:root{
+ --rf-yellow-light:#ffca38;
+ --rf-yellow:#ffb70b;
+ --rf-gold:#e2a100;
+ --rf-red:#b81717;
+ --rf-red-dark:#9c1711;
+ --rf-red-deep:#8b0500;
+ --rf-white:#ffffff;
+ --rf-black:#000000;
+ --font-display:'ChunkFive',Georgia,serif;
+ --font-body:'DM Sans',Arial,sans-serif;
+}

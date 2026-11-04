@@ -1,0 +1,3 @@
+@import url('./brand.css');
+body{margin:0;background:#1c1016;color:#efdfc8;font:16px/1.8 system-ui,sans-serif}main{max-width:760px;margin:auto;padding:32px 22px}h1{color:#e3bd70;line-height:1.2}a{color:#e3bd70}strong{color:#f4d587}
+body{background:#0d0606;color:#fff5e5}h1{font-family:var(--font-display);font-weight:400;color:var(--rf-yellow-light)}a,strong{color:var(--rf-yellow)}

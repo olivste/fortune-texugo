@@ -1,0 +1,56 @@
+name: fortune-texugo-preview
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: fortune
+      POSTGRES_USER: fortune
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure .env.docker}
+    volumes:
+      - preview_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fortune -d fortune"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+  app:
+    build: .
+    volumes:
+      - ./assets:/app/assets:ro
+    ports:
+      - "127.0.0.1:${PREVIEW_PORT:-8080}:8000"
+    environment:
+      DATABASE_URL: postgresql://fortune:${POSTGRES_PASSWORD}@db:5432/fortune
+      PHONE_PEPPER: ${PHONE_PEPPER:?Configure .env.docker}
+      ADMIN_API_KEY: ${ADMIN_API_KEY:?Configure .env.docker}
+      PRIZES_ENABLED: ${PRIZES_ENABLED:-false}
+      DEMO_UNLIMITED_SPINS: ${DEMO_UNLIMITED_SPINS:-true}
+      CPF_HMAC_KEY: ${CPF_HMAC_KEY:-}
+      CPF_ENCRYPTION_KEY: ${CPF_ENCRYPTION_KEY:-}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      PUBLIC_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      LEGACY_ACCOUNTS_ENABLED: ${LEGACY_ACCOUNTS_ENABLED:-false}
+      DATA_CONTROLLER: ${DATA_CONTROLLER:-}
+      PRIVACY_CONTACT: ${PRIVACY_CONTACT:-}
+      PRIVACY_LEGAL_BASIS: ${PRIVACY_LEGAL_BASIS:-}
+      TERMS_VERSION: ${TERMS_VERSION:-2026-11-04}
+      PRIVACY_VERSION: ${PRIVACY_VERSION:-2026-11-04}
+      PHONE_VERIFICATION_REQUIRED: ${PHONE_VERIFICATION_REQUIRED:-true}
+      RATE_LIMIT_ENABLED: ${RATE_LIMIT_ENABLED:-true}
+      REFERRAL_MAX_BONUS_SPINS: ${REFERRAL_MAX_BONUS_SPINS:-20}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID:-}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN:-}
+      TWILIO_VERIFY_SERVICE_SID: ${TWILIO_VERIFY_SERVICE_SID:-}
+      AUTHORIZATION_REFERENCE: ${AUTHORIZATION_REFERENCE:-}
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=3)"]
+      interval: 5s
+      timeout: 4s
+      retries: 20
+    restart: unless-stopped
+volumes:
+  preview_postgres:

@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fortune Texugo | Risca Faca</title><style>
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fortune Texugo | Risca Faca</title><link rel="preload" href="assets/fonts/ChunkFive-Regular.ttf" as="font" type="font/ttf" crossorigin><style>
 @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=DM+Sans:wght@400;700&display=swap');
 *{box-sizing:border-box}body{margin:0;color:#ffe5a4;background:radial-gradient(ellipse at top,#792323,#1c090e 70%);font-family:'DM Sans',sans-serif}.wrap{max-width:1100px;margin:auto;padding:20px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #b48b52;padding:10px 0}header b{font:700 30px Oswald}a{color:#f7c976}h1,h2,.spin,.marquee{font-family:Oswald}h1{font-size:clamp(42px,8vw,88px);margin:8px 0;text-align:center;text-shadow:3px 4px #63191c}p{line-height:1.5}.intro{text-align:center;margin:28px auto}.intro small{letter-spacing:3px}.status{display:inline-block;border:1px solid #b58a4e;background:#4e2521;padding:9px 15px;border-radius:8px}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:22px}.machine{border:9px ridge #eac36b;border-radius:32px;padding:14px;background:linear-gradient(140deg,#a71e2b,#530c17);box-shadow:0 15px 50px #0008,inset 0 0 0 4px #f3c86d}.marquee{text-align:center;background:#740f1a;border:3px solid #edc579;border-radius:16px;padding:12px;font-size:clamp(26px,4vw,48px);text-shadow:2px 3px #280609}.marquee small{display:block;font:700 12px 'DM Sans';letter-spacing:2px}.bulbs{display:flex;justify-content:space-around;padding:13px}.bulbs i{width:9px;height:9px;border-radius:50%;background:#ffe3a0;box-shadow:0 0 10px #ffd477}.reels{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;background:#4c0c14;border:5px solid #e8b45b;border-radius:15px;padding:9px}.reel{display:grid;gap:6px}.symbol{height:90px;display:grid;place-items:center;border-radius:8px;background:linear-gradient(#fff7e5,#e6d09d);color:#54171a;font-size:clamp(30px,5vw,60px)}.symbol:nth-child(2){outline:3px solid #db9d39;outline-offset:-4px}.spinning .symbol{animation:shake .12s infinite alternate;filter:blur(2px)}@keyframes shake{to{transform:translateY(7px)}}.controls{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:20px 0 4px;font:700 21px Oswald}.spin{font-size:26px;color:white;background:linear-gradient(#75d46a,#24772e);border:3px solid #b9e29b;border-radius:14px;padding:11px 27px;cursor:pointer}.spin:disabled{opacity:.5;cursor:not-allowed}.panel{border:1px solid #a67842;background:#2b1417;border-radius:16px;padding:20px;margin-bottom:15px}.panel h2{margin:0 0 10px}.panel label{display:block;font-size:12px;font-weight:bold;margin:12px 0 5px}.panel input{width:100%;padding:12px;border:1px solid #a47c48;background:#180b0e;color:white;border-radius:9px}.panel button{width:100%;padding:13px;background:#e0b66a;color:#24110d;border:0;border-radius:9px;font-weight:bold;margin-top:15px;cursor:pointer}.message{text-align:center;min-height:45px;padding:14px;font-weight:bold}.hidden{display:none!important}.prize{padding:12px;background:#173b20;border:1px solid #8fd27e;overflow-wrap:anywhere}.foot{text-align:center;color:#bca48c;font-size:12px;padding:30px 0}@media(max-width:800px){.layout{grid-template-columns:1fr}.side{display:grid;grid-template-columns:1fr 1fr;gap:12px}}@media(max-width:550px){.side{display:block}.machine{padding:6px;border-width:5px}.reels{gap:3px;padding:5px}.symbol{height:68px;font-size:35px}.spin{font-size:22px;padding:10px 18px}}
 
@@ -48,87 +48,41 @@ body:after{content:"";position:fixed;inset:0;pointer-events:none;z-index:-1;back
 .side{padding-top:15px}.panel{background:linear-gradient(145deg,#5d1420,#2b0a13 85%);border:3px solid #bd853d;border-radius:23px;padding:22px;box-shadow:0 0 0 3px #582013,0 12px 26px #1b0409a6,inset 0 0 20px #b4522d25;margin-bottom:22px}.panel h2{font:900 23px Cinzel;color:#ffdb86;text-shadow:0 3px #6c1a18}.panel p{font-size:13px;color:#f9dfba}.panel input{font-family:Fredoka;background:#240a13;border:2px solid #b57a38;border-radius:12px}.panel button{background:linear-gradient(#ffe49d,#e6aa42);font:700 16px Fredoka;border:2px solid #fff0bd;box-shadow:0 4px #965314}.panel-seal,.cup-icon{text-align:center;font-size:40px;color:#ffe5a1;text-shadow:0 0 12px #f5b75d}.prize-panel{text-align:center}
 @media(max-width:850px){.layout{grid-template-columns:minmax(0,580px)}.side{padding-top:0;display:grid;grid-template-columns:1fr 1fr}.side .panel:last-child{grid-column:1/-1}.machine-crown{margin-top:-55px}}
 @media(max-width:570px){.wrap{padding:12px}.intro{margin-bottom:40px}.intro h1{font-size:clamp(36px,10vw,58px)}.intro small{font-size:9px;letter-spacing:2px}.machine{padding:13px 8px 12px;border-radius:28px;box-shadow:0 0 0 3px #7c330e,0 0 0 7px #f5c15c,0 0 0 10px #9e541e,0 22px 30px #140407c9}.machine-crown{margin-top:-61px;gap:20px}.mascot-medallion{width:114px;height:114px;border-width:6px}.mascot-face{font-size:56px}.mascot-ribbon{font-size:9px}.crown-side{font-size:26px}.marquee{margin:12px 10px 10px;font-size:clamp(22px,6.2vw,35px);border-width:3px;padding:10px 2px}.marquee small{font-size:8px;letter-spacing:1px}.bulbs{padding:8px 0}.bulbs i{width:7px;height:7px}.reel-housing{padding:10px 5px;border-width:3px}.reel-ornament{font-size:9px;height:13px}.reels{padding:3px;gap:3px;border-width:3px}.symbol{height:clamp(62px,20vw,91px);font-size:clamp(34px,12vw,53px)}.controls{padding:15px 3px 5px}.controls>span{font-size:13px;padding:10px 7px}.spin{font-size:21px;padding:10px 19px;border-width:4px}.side{display:block}.panel{padding:18px}.intro p{font-size:12px}}
-</style><link rel="stylesheet" href="assets/theme.css"></head><body><div class="wrap"><header><b>RISCA BET ⚜</b><a href="#ingressos">INGRESSOS ↗</a></header><section class="intro"><div class="intro-stars">✦　✧　✦</div><div class="curtain curtain-left" aria-hidden="true"></div><div class="curtain curtain-right" aria-hidden="true"></div><small data-text="welcome">WELCOME TO FABULOUS RISCA FACA</small><h1 data-text="gameTitle">FORTUNE TEXUGO</h1><p data-text="subtitle">O texugo gira. A casa se diverte.</p><span id="mode" class="status">DEMONSTRAÇÃO • SEM PRÊMIOS</span></section><main class="layout"><div><div class="machine"><div class="machine-crown"><div class="crown-side">✦</div><div class="mascot-medallion"><img class="mascot-art" id="mascot-art" src="assets/mascote.svg" alt="Mascote do Risca Faca"><span class="mascot-ribbon" data-text="brand">RISCA FACA</span></div><div class="crown-side">✦</div></div><div class="marquee"><small data-text="eyebrow">⚜ RISCA FACA ⚜</small><span data-text="gameTitle">FORTUNE TEXUGO</span><small data-text="slogan">★ A CASA SEMPRE GANHA ★</small></div><div class="bulbs" id="bulbs"></div><div class="reel-housing"><div class="reel-ornament">✦　✦　✦　✦　✦</div><div class="reels" id="reels"></div><div class="reel-ornament bottom">✦　✦　✦　✦　✦</div></div><div class="controls"><span>✦ GIROS: <span id="remaining">3</span>/3</span><button id="spin" class="spin" disabled>GIRAR ↻</button></div></div><div class="message" id="message" aria-live="polite">Cadastre-se para liberar os giros!</div></div><aside class="side"><section class="panel" id="registration"><div class="panel-seal">⚜</div><h2>ENTRE NO JOGO</h2><p>Cadastre nome e WhatsApp para três giros gratuitos.</p><form id="form"><label for="name">SEU NOME</label><input id="name" required minlength="2" maxlength="80" autocomplete="name"><label for="phone">WHATSAPP COM DDD</label><input id="phone" type="tel" required placeholder="(27) 99999-9999"><button>LIBERAR 3 GIROS</button></form><p id="notice">Um cadastro por participante. Não é necessário comprar ingresso.</p></section><section class="panel prize-panel"><div class="cup-icon">🏆</div><h2>OS 5 COPOS</h2><p>Copos restantes: <b id="stock">5 / 5</b></p><p>Premiação real bloqueada até a autorização oficial.</p><div id="winner" class="prize hidden"></div></section><section class="panel" id="ingressos"><h2>CALOURADA DE ENGENHARIA</h2><p data-text="event">05 DE DEZEMBRO • 21H<br>CASA BRAVA</p><a id="ticket" href="https://www.guicheweb.com.br/64-calourada-da-engenharia-ufes_56060" target="_blank" rel="noopener noreferrer">GARANTIR INGRESSO</a></section></aside></main><div class="foot">RISCA FACA ⚜ • Giros gratuitos, sem apostas em dinheiro.<br>O cadastro não comprova a posse do telefone. A promoção depende de autorização e regulamento.</div></div><script src="assets/content.js"></script><script>
-const CONFIG={API_BASE:window.FORTUNE_ASSETS?.apiBase||'',TICKET_URL:'https://www.guicheweb.com.br/64-calourada-da-engenharia-ufes_56060'};
-const $=id=>document.getElementById(id);
-const ASSETS=window.FORTUNE_ASSETS||{};const icons=(ASSETS.symbols||[]).map(x=>x.src);
-const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let token='',left=3,busy=false;
-const configured=!!CONFIG.API_BASE || (location.protocol.startsWith('http')&&!location.hostname.endsWith('github.io')&&!['localhost','127.0.0.1'].includes(location.hostname));
-$('bulbs').innerHTML='<i></i>'.repeat(17);
-$('reels').innerHTML=Array.from({length:3},(_,c)=>'<div class="reel">'+Array.from({length:3},(_,r)=>'<div class="symbol">'+symbolHTML(icons[(c*2+r)%icons.length])+'</div>').join('')+'</div>').join('');
-if(CONFIG.TICKET_URL){$('ticket').href=CONFIG.TICKET_URL;$('ticket').textContent='GARANTIR INGRESSO'}
-$('notice').textContent=configured?'Três giros demonstrativos por cadastro. Sem prêmios reais.':'Prévia local: sem gravação de dados e sem prêmios.';
-const randomSymbol=()=>icons[Math.floor(Math.random()*icons.length)];
-function symbolHTML(src){const label=(ASSETS.symbols||[]).find(s=>s.src===src)?.name||'Símbolo';return '<img src="'+src+'" alt="'+label.replace(/"/g,'')+'" loading="eager" draggable="false">'}
-const grid=()=>Array.from({length:3},()=>Array.from({length:3},randomSymbol));
-for(const el of document.querySelectorAll('[data-text]')){const key=el.dataset.text;if(ASSETS.text?.[key])el.textContent=ASSETS.text[key]}
-if(ASSETS.mascot)$('mascot-art').src=ASSETS.mascot;
-if(ASSETS.background)document.documentElement.style.setProperty('--scene-image','url("'+ASSETS.background+'")');
-function drawColumn(c,values){for(let r=0;r<3;r++)$('reels').children[c].children[r].innerHTML=symbolHTML(values[r])}
-function msg(s,celebrate=false){$('message').textContent=s;$('message').classList.toggle('celebrate',celebrate)}
-const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
-async function call(fn,data){
- const r=await fetch(CONFIG.API_BASE+'/api/'+fn,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
- const j=await r.json();if(!r.ok)throw Error(typeof j.detail==='string'?j.detail:(j.error||'Falha na operação'));return j;
-}
-async function restore(){
- const stored=localStorage.getItem('fortune_demo_session');if(!stored||!configured)return;
- try{const r=await fetch(CONFIG.API_BASE+'/api/session',{headers:{Authorization:'Bearer '+stored}});
- if(!r.ok){localStorage.removeItem('fortune_demo_session');return}
- const d=await r.json();token=stored;left=d.spins_left;$('registration').classList.add('hidden');$('remaining').textContent=left;$('spin').disabled=left<=0;msg(left?'Sua sessão foi recuperada!':'Seus giros acabaram!');
- }catch(e){console.warn('Sessão indisponível',e)}
-}
-restore();
-
-function confetti(){
- if(reduced)return;
- for(let i=0;i<75;i++){const el=document.createElement('i');el.className='confetti';
- el.style.setProperty('--left',Math.random()*100+'vw');
- el.style.setProperty('--duration',(2+Math.random()*2.5)+'s');
- el.style.setProperty('--drift',(Math.random()-.5)*250+'px');
- el.style.setProperty('--rotation',Math.random()*360+'deg');
- el.style.setProperty('--color',['#f3cb6b','#fff1bb','#c12435','#69bf6b'][i%4]);
- document.body.append(el);el.addEventListener('animationend',()=>el.remove())}
-}
-async function animateReels(finalGrid){
- const columns=Array.from($('reels').children);
- if(reduced){finalGrid.forEach((v,c)=>drawColumn(c,v));return}
- columns.forEach(c=>c.classList.add('rolling'));
- const intervals=columns.map((_,c)=>setInterval(()=>drawColumn(c,Array.from({length:3},randomSymbol)),65));
- for(let c=0;c<3;c++){
-  await sleep(c===0?780:390);
-  clearInterval(intervals[c]);columns[c].classList.remove('rolling');
-  drawColumn(c,finalGrid[c]);columns[c].classList.add('stopped');
-  await sleep(180);columns[c].classList.remove('stopped');
- }
-}
-$('form').onsubmit=async e=>{
- e.preventDefault();
- const name=$('name').value.trim(),phone=$('phone').value.replace(/\D/g,'');
- if(name.length<2||!/^(?:55)?[1-9]\d{9,10}$/.test(phone))return msg('Informe nome e WhatsApp válido com DDD');
- const btn=$('form').querySelector('button');btn.disabled=true;
- try{
-  if(configured){const d=await call('register',{name,phone});token=d.session;localStorage.setItem('fortune_demo_session',token);left=d.spins_left;$('stock').textContent=d.stock+' / 5';$('mode').textContent=d.demo?'DEMONSTRAÇÃO • SEM PRÊMIOS':'PROMOÇÃO AUTORIZADA'}
-  else{token='local-demo';left=3}
-  $('registration').classList.add('hidden');$('remaining').textContent=left;$('spin').disabled=false;msg('Seus giros estão liberados!');
- }catch(err){msg(err.message)}finally{btn.disabled=false}
-};
-$('spin').onclick=async()=>{
- if(busy||!token||left<=0)return;
- busy=true;$('spin').disabled=true;msg('O texugo está girando...');
- try{
-  const request=configured?call('spin',{session:token}):Promise.resolve({grid:grid(),spins_left:left-1,stock:5,won:false,demo:true});
-  const result=await request;
-  const visualGrid=(result.grid||grid()).map(col=>col.map(v=>icons.includes(v)?v:(ASSETS.symbols.find(s=>s.name.toLowerCase()===String(v).toLowerCase())?.src||icons[0])));
-  await animateReels(visualGrid);
-  left=result.spins_left;$('remaining').textContent=left;$('stock').textContent=result.stock+' / 5';
-  if(result.won){
-   $('winner').classList.remove('hidden');$('winner').textContent='VOCÊ GANHOU UM COPO! Código: '+result.claim_code;
-   $('reels').closest('.machine').classList.add('win');confetti();msg('JACKPOT! VOCÊ GANHOU UM COPO!',true);
-   setTimeout(()=>$('reels').closest('.machine').classList.remove('win'),2300);
-  }else msg(result.demo?'Giro de demonstração, sem premiação.':left?'Não foi dessa vez!':'Seus giros acabaram!');
- }catch(err){msg(err.message)}
- finally{busy=false;$('spin').disabled=left<=0}
-};
-</script></body></html>
+</style><link rel="stylesheet" href="assets/theme.css"></head><body><div class="wrap"><header><b class="game-wordmark"><span class="title-gold" data-text="brandTitleStart">risca</span><span class="title-red" data-text="brandTitleEnd">bet</span></b><a href="#ingressos">INGRESSOS ↗</a></header><section class="intro"><div class="intro-stars">✦　✧　✦</div><div class="curtain curtain-left" aria-hidden="true"></div><div class="curtain curtain-right" aria-hidden="true"></div><small data-text="welcome">WELCOME TO FABULOUS RISCA FACA</small><h1 class="game-wordmark" data-text="gameTitle">FORTUNE TEXUGO</h1><p data-text="subtitle">O texugo gira. A casa se diverte.</p><span id="mode" class="status">DEMONSTRAÇÃO • SEM PRÊMIOS</span></section><nav id="account-toolbar" class="account-toolbar" hidden><span id="account-name"></span><div><button id="open-redeem" type="button">RESGATAR GIROS</button><button id="open-profile" type="button">MEU PERFIL</button><button id="account-logout" type="button">SAIR</button></div></nav><p class="follow-notice">Para concorrer aos prêmios, siga <a href="https://www.instagram.com/risca.faca/" target="_blank" rel="noopener noreferrer">@risca.faca ↗</a> no Instagram.</p><main class="layout"><div class="game-stack"><div class="machine"><img id="cabinet-skin" class="cabinet-skin" src="assets/art/cabinet-skin-v2.png" alt="" fetchpriority="high"><div class="marquee"><span class="game-wordmark" data-text="gameTitle">FORTUNE TEXUGO</span></div><div class="bulbs" id="bulbs"></div><div class="reel-housing"><div class="reel-ornament">✦　✦　✦　✦　✦</div><div class="reels" id="reels"></div><div class="reel-ornament bottom">✦　✦　✦　✦　✦</div></div><div class="controls"><span class="spin-meter"><small data-text="freeSpins">GIROS:</small><span id="remaining">3</span></span><button id="spin" class="spin" disabled><span class="spin-arrow" aria-hidden="true">↻</span><span data-text="spinButton">GIRAR</span></button><span class="machine-stamp" aria-hidden="true">RF</span></div></div><div id="registration-start" class="registration-start"><button id="open-registration" type="button" disabled data-text="registrationStart">LIBERAR MEUS GIROS</button><p data-text="registrationHint">Cadastro rápido. Giros gratuitos.</p></div><div id="verification-start" class="verification-start" hidden><button id="open-verification" type="button" data-text="verificationButton">CONFIRMAR MEU TELEFONE</button><p data-text="verificationPending">Confirme seu telefone para liberar os giros.</p></div><div class="message" id="message" aria-live="polite">Cadastre-se para liberar os giros!</div><dialog id="end-of-spins" class="end-of-spins" aria-labelledby="end-title" aria-describedby="end-message">
+<button id="end-close" class="popup-close" type="button" autofocus></button>
+<div class="popup-poster">
+  <p id="end-brand" class="popup-brand"></p>
+  <div class="popup-hero" aria-hidden="true">
+    <span class="popup-star popup-star-left">✦</span>
+    <div class="popup-medallion"><img id="end-mascot" src="assets/simbolos/texugo.svg" alt=""></div>
+    <span class="popup-star popup-star-right">✦</span>
+  </div>
+  <p id="end-kicker" class="popup-kicker"></p>
+  <h2 id="end-title"></h2>
+  <p id="end-message" class="popup-description"></p>
+  <div class="popup-event"><span class="popup-event-star" aria-hidden="true">✦</span><div><span id="end-event-label" class="popup-event-label"></span><p id="end-event"></p></div><span class="popup-event-star" aria-hidden="true">✦</span></div>
+  <a id="end-ticket" class="ticket-cta" target="_blank" rel="noopener noreferrer"></a>
+</div>
+</dialog>
+<dialog id="prize-popup" class="end-of-spins prize-popup" aria-labelledby="prize-title" aria-describedby="prize-instructions">
+  <button id="prize-close" class="popup-close" type="button" autofocus></button>
+  <div class="popup-poster">
+    <p id="prize-brand" class="popup-brand"></p>
+    <div class="popup-hero" aria-hidden="true"><div class="popup-medallion"><img id="prize-art" src="assets/simbolos/copo.svg" alt=""></div></div>
+    <h2 id="prize-title"></h2>
+    <p id="prize-instructions" class="popup-description"></p>
+    <div class="prize-code-box"><label id="prize-code-label" for="prize-code"></label><output id="prize-code"></output><button id="copy-prize-code" type="button" class="copy-code"></button><p id="copy-code-status" role="status" aria-live="polite"></p></div>
+    <a id="prize-instagram" class="ticket-cta" target="_blank" rel="noopener noreferrer" hidden></a>
+  </div>
+</dialog></div><aside class="side"><section id="referral-panel" class="referral-panel" hidden><h2 data-text="referralTitle">Indique e ganhe um giro</h2><p data-text="referralDescription">Seu amigo precisa cadastrar e confirmar o telefone. Cada indicação válida libera um giro para você.</p><output id="my-referral-code"></output><div class="referral-actions"><button id="copy-referral-code" type="button" data-text="referralCopyCode">COPIAR CÓDIGO</button></div><p id="referral-counts"></p><p id="referral-total"></p><button id="refresh-referrals" type="button" data-text="referralRefresh">ATUALIZAR MEUS GIROS</button><p id="referral-status" role="status"></p></section><details class="panel prize-panel"><summary data-text="prizesTitle">Prêmios e retirada</summary><div class="panel-details"><p><span data-text="stockLabel">Prêmios disponíveis</span>: <b id="stock">—</b></p><p id="current-prize"></p><ul id="prize-options" class="prize-list"></ul><details class="game-rules"><summary>Como funciona a premiação</summary><p id="prize-rules">Demonstração sem prêmios reais.</p></details><div id="winner" class="prize hidden"></div><button id="prize-details" type="button" hidden></button></div></details><section class="panel" id="ingressos"><h2>CALOURADA DE ENGENHARIA</h2><p data-text="event">05 DE DEZEMBRO • 21H<br>CASA BRAVA</p><a id="ticket" href="https://www.guicheweb.com.br/64-calourada-da-engenharia-ufes_56060" target="_blank" rel="noopener noreferrer">GARANTIR INGRESSO</a></section></aside></main><dialog class="registration-dialog" id="registration" aria-labelledby="registration-title" aria-describedby="registration-copy"><button id="registration-close" class="popup-close" type="button" data-text="closePopup">Fechar ✕</button><div class="panel-seal">⚜</div><h2 id="registration-title" data-text="registrationTitle">ENTRE NO JOGO</h2><p id="registration-copy">Cadastre nome e WhatsApp para três giros gratuitos.</p><form id="form">
+<div class="account-field field-name"><label for="name">NOME COMPLETO</label><input id="name" required minlength="3" maxlength="80" autocomplete="name"></div>
+<div class="account-field field-cpf"><label for="cpf">CPF</label><input id="cpf" required inputmode="numeric" maxlength="18" autocomplete="off" placeholder="000.000.000-00"></div>
+<div class="account-field field-instagram"><label for="instagram">SEU INSTAGRAM</label><input id="instagram" required maxlength="31" autocomplete="username" placeholder="@seu.usuario"></div>
+<div class="account-field field-password"><label for="password">SENHA</label><input id="password" type="password" required minlength="8" maxlength="128" autocomplete="new-password"></div>
+<div class="account-field field-password-confirmation"><label for="password-confirmation">CONFIRMAR SENHA</label><input id="password-confirmation" type="password" required minlength="8" maxlength="128" autocomplete="new-password"></div>
+<div class="account-field field-referral-input"><label for="referral-input">INSTAGRAM DE QUEM INDICOU (OPCIONAL)</label><input id="referral-input" maxlength="31" autocomplete="off" placeholder="@amigo"></div>
+<label class="acceptance"><input id="adult" type="checkbox" required><span>Declaro ter pelo menos 18 anos.</span></label>
+<label class="acceptance"><input id="accept-terms" type="checkbox" required><span>Aceito os <a href="/termos" target="_blank" rel="noopener">Termos de Uso</a> e estou ciente do <a href="/privacidade" target="_blank" rel="noopener">Aviso de Privacidade</a>.</span></label>
+<button>CRIAR CONTA</button></form><p id="registration-error" role="alert"></p><p id="notice">Um cadastro por participante. Não é necessário comprar ingresso.</p></dialog><dialog id="verification-dialog" class="registration-dialog" aria-labelledby="verification-title"><button id="verification-close" class="popup-close" type="button" data-text="closePopup">Fechar ✕</button><h2 id="verification-title" data-text="verificationTitle">Confirme seu telefone</h2><p data-text="verificationDescription">Receba um código por SMS para comprovar que este número é seu e liberar a participação.</p><form id="send-code-form"><label for="verification-phone" data-text="verificationPhoneLabel">TELEFONE DO CADASTRO</label><input id="verification-phone" type="tel" required maxlength="25" autocomplete="tel"><button id="send-phone-code" type="submit" data-text="verificationSend">ENVIAR CÓDIGO POR SMS</button></form><p id="sms-availability"></p><form id="check-code-form"><label for="verification-code" data-text="verificationCodeLabel">CÓDIGO DE 6 DÍGITOS</label><input id="verification-code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]{6}" maxlength="6" required><button id="check-phone-code" type="submit" data-text="verificationCheck">CONFIRMAR CÓDIGO</button></form><p id="verification-status" role="status"></p></dialog><dialog id="login-dialog" class="registration-dialog" aria-labelledby="login-title"><button id="login-close" class="popup-close" type="button">Fechar ✕</button><h2 id="login-title">ENTRE NO JOGO</h2><form id="login-form"><label for="login-identifier">CPF OU INSTAGRAM</label><input id="login-identifier" required maxlength="40" autocomplete="username"><label for="login-password">SENHA</label><input id="login-password" type="password" required maxlength="128" autocomplete="current-password"><button>ENTRAR</button></form><p id="login-error" role="alert"></p><button id="login-signup" type="button">CRIAR MINHA CONTA</button></dialog>
+<dialog id="redeem-dialog" class="registration-dialog" aria-labelledby="redeem-title"><button id="redeem-close" class="popup-close" type="button">Fechar ✕</button><h2 id="redeem-title">RESGATAR GIROS</h2><p>Tem um código promocional? Digite abaixo e resgate seus giros extras.</p><form id="promo-form"><label for="promo-code">CÓDIGO PROMOCIONAL</label><input id="promo-code" required minlength="3" maxlength="40" autocomplete="off"><button>RESGATAR</button></form><p id="promo-status" role="status"></p></dialog>
+<dialog id="profile-dialog" class="registration-dialog" aria-labelledby="profile-title"><button id="profile-close" class="popup-close" type="button">Fechar ✕</button><h2 id="profile-title">MEU PERFIL</h2><p id="profile-summary"></p><p id="profile-balance"></p><p><a href="/termos">Termos</a> · <a href="/privacidade">Privacidade</a></p></dialog><div class="foot">RISCA FACA ⚜ • Giros gratuitos, sem apostas em dinheiro.<br>CPF e Instagram informados não comprovam identidade. A promoção depende de autorização e regulamento.</div></div><script src="assets/content.js"></script><script src="assets/game.js"></script><script src="assets/accounts.js"></script></body></html>

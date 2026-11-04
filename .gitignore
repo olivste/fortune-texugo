@@ -3,3 +3,12 @@
 !.env.example
 node_modules/
 .DS_Store
+
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+*.ftbackup
+*.fortune-backup.json
+.local-backups/
