@@ -26,6 +26,7 @@ window.FORTUNE_ASSETS = {
     freeSpins: "GIROS:",
     prizesTitle: "Prêmios e retirada",
     currentPrizeLabel: "Prêmio da vez: ",
+    randomPrizes: "3 símbolos na linha central = prêmio. O tipo é sorteado entre os itens disponíveis.",
     stockLabel: "Prêmios disponíveis",
     winMessage: "PARABÉNS! VOCÊ GANHOU: {prize}!",
     liveNotice: "Três giros gratuitos por cadastro. Não é necessário comprar ingresso.",

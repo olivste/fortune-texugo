@@ -36,9 +36,11 @@ function effectiveChances(){
   if(!settings)return;
   const base=Number($('probability').value);
   if(!Number.isFinite(base)||base<0||base>100)return;
+  const totalWeight=settings.items.filter(item=>item.active&&item.stock>0).reduce((sum,item)=>sum+item.chance_multiplier,0);
   for(const item of settings.items){
+    const percent=item.active&&item.stock>0&&totalWeight?base*item.chance_multiplier/totalWeight:0;
     const row=document.createElement('p');
-    row.textContent=`${item.name}: ${Math.min(100,base*item.chance_multiplier).toLocaleString('pt-BR',{maximumFractionDigits:2})}% por giro${!item.active?' · pausado':item.stock<=0?' · esgotado':''}`;
+    row.textContent=`${item.name}: ${percent.toLocaleString('pt-BR',{maximumFractionDigits:2})}% por giro${!item.active?' · pausado':item.stock<=0?' · esgotado':''}`;
     $('effective-chances').append(row);
   }
 }
@@ -67,14 +69,16 @@ function renderSettings(data) {
     name.required = true; name.minLength = 2; name.maxLength = 80;
     const symbol = labeledInput(form, 'Símbolo nos rolos', 'select', '', `item-${item.id}-symbol`);
     fillSymbols(symbol, item.symbol);
-    const priority = labeledInput(form, 'Ordem na sequência (menor primeiro)', 'number', item.priority, `item-${item.id}-priority`);
+    const priority = labeledInput(form, 'Ordem de exibição (não afeta o sorteio)', 'number', item.priority, `item-${item.id}-priority`);
     priority.required = true; priority.min = 1; priority.max = 10000; priority.step = 1;
-    const multiplier = labeledInput(form, 'Multiplicador da chance base (1 = normal, 2 = dobro)', 'number', item.chance_multiplier, `item-${item.id}-multiplier`);
+    const multiplier = labeledInput(form, 'Peso no sorteio (2 = dobro do peso 1)', 'number', item.chance_multiplier, `item-${item.id}-multiplier`);
     multiplier.required = true; multiplier.min = 1; multiplier.max = 100; multiplier.step = 1;
     const chance = document.createElement('p');
     const updateChance = () => {
-      const percent = Math.min(100, settings.probability_percent * Number(multiplier.value));
-      chance.textContent = `Chance deste prêmio quando entrar em jogo: ${percent.toLocaleString('pt-BR', {maximumFractionDigits: 2})}% por giro elegível (máximo 100%).`;
+      const weight=Number(multiplier.value);
+      const others=settings.items.filter(other=>other.id!==item.id&&other.active&&other.stock>0).reduce((sum,other)=>sum+other.chance_multiplier,0);
+      const share=item.active&&item.stock>0&&weight>0?weight/(others+weight):0;
+      chance.textContent = `${(share*100).toLocaleString('pt-BR',{maximumFractionDigits:2})}% das vitórias enquanto houver esse estoque. O peso não aumenta a chance geral de ganhar.`;
     };
     multiplier.addEventListener('input', updateChance); updateChance(); form.append(chance);
     const quantity = labeledInput(form, 'Quantidade total (inclui concedidos)', 'number', item.total_quantity, `item-${item.id}-quantity`);

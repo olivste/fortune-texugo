@@ -375,3 +375,16 @@ test('referral link stays available to copy manually if clipboard is unavailable
  await page.element('copy-referral-link').onclick();
  assert.match(page.element('referral-status').textContent,/https:\/\/riscabet.online\/\?ref=%40ana.silva/);
 });
+
+
+test('paytable maps three symbols to their configured prizes without a fixed next prize',async()=>{
+ const page=await browser(async url=>{
+  if(url.endsWith('/config'))return response({...state,selection_mode:'random_weighted',prize_options:[
+   {name:'Copo Risca Faca',symbol:'copo',stock:5},{name:'Pulseira <bar>',symbol:'ficha',stock:10}]});
+  throw Error(url);
+ });
+ const html=page.element('prize-options').innerHTML;
+ assert.match(html,/3×/);assert.match(html,/assets\/simbolos\/copo.svg/);assert.match(html,/assets\/simbolos\/ficha.svg/);
+ assert.match(html,/Copo Risca Faca/);assert.match(html,/Pulseira &lt;bar&gt;/);
+ assert.match(page.element('current-prize').textContent,/tipo é sorteado/);
+});

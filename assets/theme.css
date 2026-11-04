@@ -257,3 +257,7 @@ header{border-color:#ffffff0c;padding-bottom:16px}header a{border-color:#ffffff1
 
 .referral-actions{display:grid;grid-template-columns:minmax(0,1fr);gap:8px}#referral-status{overflow-wrap:anywhere;user-select:text}
 @media(min-width:380px) and (max-width:760px){.referral-actions{grid-template-columns:1fr 1fr}}
+
+/* Paytable: three matching symbols, their prize, and remaining units. */
+.prize-list li.prize-rule{grid-template-columns:76px minmax(0,1fr) auto;gap:9px;align-items:center}.prize-combination{display:flex;align-items:center;gap:5px;white-space:nowrap;font:700 12px/1.4 var(--font-body);color:#dcc18a}.prize-combination img{display:block;width:30px;height:42px;object-fit:contain;flex-shrink:0}.prize-list .prize-rule-name{font-size:11px;line-height:1.5;overflow-wrap:anywhere}.prize-combination>span{color:#9d8c75}
+.prize-panel[open] .game-rules>summary::after{content:none}

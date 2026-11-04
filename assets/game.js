@@ -136,8 +136,13 @@ function showState(data){
   $('form').querySelector('button').textContent=ASSETS.text.unlimitedButton;
  }
  $('stock').textContent=data.stock+' / '+(data.total_stock??5);
- if('current_prize' in data)$('current-prize').textContent=data.current_prize?ASSETS.text.currentPrizeLabel+data.current_prize.name:'';
- if(data.prize_options)$('prize-options').innerHTML=data.prize_options.map(item=>'<li><span>'+escapeHTML(item.name)+'</span><strong>'+Number(item.stock)+'</strong></li>').join('');
+ if(data.selection_mode==='random_weighted')$('current-prize').textContent=ASSETS.text.randomPrizes;
+ else if('current_prize' in data)$('current-prize').textContent=data.current_prize?ASSETS.text.currentPrizeLabel+data.current_prize.name:'';
+ if(data.prize_options)$('prize-options').innerHTML=data.prize_options.map(item=>{
+  const symbol=(ASSETS.symbols||[]).find(symbol=>symbol.id===item.symbol);
+  const figure=symbol?'<img src="'+escapeHTML(symbol.src)+'" alt="'+escapeHTML(symbol.name)+'" loading="lazy">':escapeHTML(item.symbol||'símbolo');
+  return '<li class="prize-rule"><span class="prize-combination">3× '+figure+'<span aria-hidden="true">=</span></span><span class="prize-rule-name">'+escapeHTML(item.name)+'</span><strong title="Unidades disponíveis">'+Number(item.stock)+'</strong></li>';
+ }).join('');
  $('mode').textContent=data.demo?ASSETS.text.demoMode:ASSETS.text.liveMode;
  $('prize-rules').textContent=data.demo?ASSETS.text.demoRules:ASSETS.text.liveRules.replaceAll('{chance}',((data.probability??0.02)*100).toLocaleString('pt-BR',{maximumFractionDigits:2}));
  $('notice').textContent=unlimited?ASSETS.text.unlimitedNotice:data.demo?ASSETS.text.demoNotice:ASSETS.text.liveNotice;

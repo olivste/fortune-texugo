@@ -52,7 +52,7 @@ O healthcheck `/health` já está em `railway.json`. Ele confirma banco e servid
 - Entre no administrador usando a `ADMIN_API_KEY` do arquivo privado, sem compartilhar a chave.
 - Crie um cupom de teste com poucos giros e resgates; resgate uma vez e confirme bloqueio da segunda tentativa.
 - Teste uma indicação entre contas distintas; o indicador deve receber somente um giro por cadastro válido.
-- Confira estoque, chance e multiplicadores. O banco novo não importa as configurações locais.
+- Confira estoque, chance geral e pesos. O banco novo não importa as configurações locais.
 - Desative o cupom de teste e suspenda as contas de teste que não participarão da campanha. Não apague tabelas para limpar testes.
 
 ## 6. Antes de abrir a campanha
@@ -61,7 +61,7 @@ O healthcheck `/health` já está em `railway.json`. Ele confirma banco e servid
 - Confirme a data de encerramento: a rotina elimina CPF e encerra novos cadastros com CPF em **05/12/2026 às 00h de São Paulo**. O login posterior continua por Instagram e senha.
 - Configure backups do PostgreSQL no Railway e documente retenção/exclusão de snapshots, logs e exportações. A aplicação não tem acesso automático a cópias externas.
 - Teste os limites de requisições no domínio e a configuração de proxies confiáveis.
-- Configure o estoque real e as porcentagens aprovadas no painel. Confira o efeito dos multiplicadores; 99% com multiplicador 3 resulta em 100% efetivos.
+- Configure o estoque real e as porcentagens aprovadas no painel. A chance geral não é multiplicada pelos pesos: com 99%, o giro tem 99% de chance de ganhar; o peso apenas distribui qual prêmio sai.
 - Antes da ativação, confira se há contas de teste e prêmios/cupom de teste ainda disponíveis.
 
 ## 7. Ativar prêmios após a conferência

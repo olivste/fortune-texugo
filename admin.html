@@ -38,7 +38,7 @@
         <p id="probability-mode" class="mode-notice"></p>
         <button type="submit">Salvar porcentagem de ganho</button>
         <p id="probability-status" role="status"></p>
-        <details><summary>Como a porcentagem funciona</summary><p>A chance base é multiplicada pelo fator de cada prêmio, até o máximo de 100%. O sistema usa o primeiro prêmio ativo com estoque, na ordem configurada. Máximo de um prêmio por participante. Itens pausados ou esgotados não participam.</p></details>
+        <details><summary>Como a porcentagem funciona</summary><p>A porcentagem define a chance geral de ganhar por giro. Ao vencer, o sistema sorteia um dos prêmios ativos com estoque. O peso define a proporção entre eles: peso 2 tem o dobro da chance de peso 1. A ordem é apenas visual e a quantidade em estoque não é usada como peso. Máximo de um prêmio por participante. Itens pausados ou esgotados não participam.</p></details>
       </form>
       <section aria-labelledby="catalog-title">
         <h2 id="catalog-title">Prêmios da campanha</h2>
@@ -49,8 +49,8 @@
         <h2>Adicionar prêmio</h2>
         <label for="new-name">Nome do prêmio</label><input id="new-name" minlength="2" maxlength="80" required placeholder="Ex.: Pulseira de entrada no bar">
         <label for="new-symbol">Símbolo nos rolos</label><select id="new-symbol" required></select>
-        <label for="new-priority">Ordem na sequência (menor primeiro)</label><input id="new-priority" type="number" min="1" max="10000" step="1" value="2" required>
-        <label for="new-multiplier">Multiplicador da chance base (2 = dobro)</label><input id="new-multiplier" type="number" min="1" max="100" step="1" value="1" required>
+        <label for="new-priority">Ordem de exibição (não afeta o sorteio)</label><input id="new-priority" type="number" min="1" max="10000" step="1" value="2" required>
+        <label for="new-multiplier">Peso no sorteio (2 = dobro do peso 1)</label><input id="new-multiplier" type="number" min="1" max="100" step="1" value="1" required>
         <label for="new-quantity">Quantidade total</label><input id="new-quantity" type="number" min="0" max="10000" step="1" required>
         <label class="checkbox"><input id="new-active" type="checkbox" checked> Disponível para sorteio</label>
         <button type="submit">Adicionar prêmio</button>

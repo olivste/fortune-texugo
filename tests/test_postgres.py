@@ -300,8 +300,10 @@ def test_concurrent_catalog_edits_reject_stale_version(database):
     assert sorted(r.status_code for r in responses) == [200, 409]
 
 
-def test_concurrent_spins_respect_each_prize_type_inventory(database):
+def test_concurrent_spins_respect_each_prize_type_inventory(database,monkeypatch):
     client, connect = database
+    rng=main.secrets.SystemRandom()
+    monkeypatch.setattr(main.secrets,'randbelow',lambda n:0 if n==10000 else rng.randrange(n))
     assert add_item(client, total_quantity=3).status_code == 201
     tokens = [register(client, i) for i in range(30)]
     with ThreadPoolExecutor(max_workers=12) as pool:
@@ -315,39 +317,33 @@ def test_concurrent_spins_respect_each_prize_type_inventory(database):
         assert all(row['stock'] == 0 for row in conn.execute('SELECT stock FROM prize_types').fetchall())
 
 
-def test_cups_are_awarded_before_wristbands_and_replay_survives_change(database, monkeypatch):
+def test_random_prizes_can_award_wristbands_before_cups_and_replay_is_unchanged(database, monkeypatch):
     client, _ = database
-    def probability_roll(n):
-        assert n == 10000, 'No random draw should choose a prize type'
-        return 0
-    monkeypatch.setattr(main.secrets, 'randbelow', probability_roll)
-    assert add_item(client, total_quantity=2).status_code == 201
-    results = []
-    for i in range(7):
-        token = register(client, i)
-        key = str(uuid4())
-        result = spin(client, token, key).json()
-        results.append(result)
-        if i == 0:
-            first_token, first_key, first_result = token, key, result
-    assert [p['prize_name'] for p in results] == ['Copo Risca Faca'] * 5 + ['Pulseira de entrada no bar'] * 2
-    assert client.get('/api/config').json()['current_prize'] is None
-    set_chance(client, 0)
-    assert spin(client, first_token, first_key).json() == first_result
+    assert add_item(client,total_quantity=2).status_code==201
+    monkeypatch.setattr(main.secrets,'randbelow',lambda n:0 if n==10000 else n-1)
+    token=register(client)
+    key=str(uuid4())
+    first=spin(client,token,key).json()
+    assert first['prize_name']=='Pulseira de entrada no bar'
+    config=client.get('/api/config').json()
+    assert config['selection_mode']=='random_weighted' and config['current_prize'] is None
+    assert next(item for item in config['prize_options'] if item['symbol']=='copo')['stock']==5
+    set_chance(client,0)
+    assert spin(client,token,key).json()==first
 
 
-def test_sequence_can_be_changed_and_paused_manually(database):
+def test_display_order_does_not_force_prizes_and_paused_items_are_excluded(database,monkeypatch):
     client, _ = database
-    added = add_item(client, priority=2).json()
-    wristband = next(item for item in added['items'] if item['symbol'] == 'ficha')
-    assert client.get('/api/config').json()['current_prize']['name'] == 'Copo Risca Faca'
-    # Deliberately put wristbands before cups via the administrator's sequence.
-    assert edit_item(client, wristband, priority=1).status_code == 200
-    cup = get_settings(client)['items'][0]
-    assert edit_item(client, cup, priority=3).status_code == 200
-    assert spin(client, register(client)).json()['prize_name'] == 'Pulseira de entrada no bar'
-    assert edit_item(client, wristband, active=False).status_code == 200
-    assert spin(client, register(client, 1)).json()['prize_name'] == 'Copo Risca Faca'
+    added=add_item(client,priority=2).json()
+    wristband=next(item for item in added['items'] if item['symbol']=='ficha')
+    cup=next(item for item in added['items'] if item['symbol']=='copo')
+    assert edit_item(client,wristband,priority=1).status_code==200
+    assert edit_item(client,cup,priority=3).status_code==200
+    # Last weighted ticket chooses the displayed-last cup, even while wristbands remain.
+    monkeypatch.setattr(main.secrets,'randbelow',lambda n:0 if n==10000 else n-1)
+    assert spin(client,register(client)).json()['prize_name']=='Copo Risca Faca'
+    assert edit_item(client,cup,active=False).status_code==200
+    assert spin(client,register(client,1)).json()['prize_name']=='Pulseira de entrada no bar'
 
 
 def test_original_cup_migration_preserves_stock_codes_and_restart(database):
@@ -369,31 +365,36 @@ def test_original_cup_migration_preserves_stock_codes_and_restart(database):
         assert prize['prize_name'] == 'Copo Risca Faca'
 
 
-def test_wristbands_have_twice_cup_probability_and_stock_ten(database, monkeypatch):
+def test_prize_weights_split_the_global_chance_without_multiplying_it(database,monkeypatch):
     client, _ = database
-    assert add_item(client, total_quantity=10, chance_multiplier=2).status_code == 201
-    # 2% cups: roll 200 loses. Exhaust the 5 cups with roll zero.
-    monkeypatch.setattr(main.secrets, 'randbelow', lambda n: 200)
-    assert spin(client, register(client, 0)).json()['won'] is False
-    monkeypatch.setattr(main.secrets, 'randbelow', lambda n: 0)
-    for i in range(1, 6):
-        result = spin(client, register(client, i)).json()
-        assert result['prize_name'] == 'Copo Risca Faca' and result['spin_probability'] == 0.02
-    config = client.get('/api/config').json()
-    assert config['probability'] == 0.04 and config['current_prize']['stock'] == 10
-    monkeypatch.setattr(main.secrets, 'randbelow', lambda n: 399)
-    won = spin(client, register(client, 6)).json()
-    assert won['won'] is True and won['prize_name'] == 'Pulseira de entrada no bar'
-    assert won['spin_probability'] == 0.04
-    monkeypatch.setattr(main.secrets, 'randbelow', lambda n: 400)
-    assert spin(client, register(client, 7)).json()['won'] is False
-    set_chance(client, 10)
-    assert client.get('/api/config').json()['probability'] == 0.2
-    set_chance(client, 60)
-    assert client.get('/api/config').json()['probability'] == 1
-    # Saving a different field retains the doubled chance after restart/migration.
-    wristband = get_settings(client)['items'][1]
-    assert edit_item(client, wristband, name='Pulseira bar').json()['items'][1]['chance_multiplier'] == 2
+    assert add_item(client,total_quantity=10,chance_multiplier=2).status_code==201
+    config=client.get('/api/config').json()
+    cup,wristband=config['prize_options']
+    assert config['probability']==0.02
+    assert cup['selection_probability']==pytest.approx(1/3)
+    assert wristband['selection_probability']==pytest.approx(2/3)
+    assert cup['probability']==pytest.approx(.02/3)
+    assert wristband['probability']==pytest.approx(.04/3)
+    monkeypatch.setattr(main.secrets,'randbelow',lambda n:200 % n)
+    assert spin(client,register(client)).json()['won'] is False
+    monkeypatch.setattr(main.secrets,'randbelow',lambda n:199 if n==10000 else n-1)
+    won=spin(client,register(client,1)).json()
+    assert won['won'] and won['prize_name']=='Pulseira de entrada no bar'
+    assert won['spin_probability']==.02
+    set_chance(client,60)
+    assert client.get('/api/config').json()['probability']==.6
+    saved_wristband=next(item for item in get_settings(client)['items'] if item['id']==wristband['id'])
+    assert edit_item(client,saved_wristband,name='Pulseira bar').json()['items'][1]['chance_multiplier']==2
+
+
+@pytest.mark.parametrize('ticket,expected',[(0,'copo'),(1,'ficha'),(2,'ficha')])
+def test_weighted_draw_has_exact_integer_boundaries(monkeypatch,ticket,expected):
+    items=[{'symbol':'copo','chance_multiplier':1},{'symbol':'ficha','chance_multiplier':2}]
+    def draw(n):
+        assert n==3
+        return ticket
+    monkeypatch.setattr(main.secrets,'randbelow',draw)
+    assert main.random_prize(items)['symbol']==expected
 
 
 def test_readable_code_and_winner_cannot_spin_even_after_redemption(database):

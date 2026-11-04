@@ -92,6 +92,8 @@ def main():
                     assert page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'Overflow at {width}'
                     page.locator('.prize-panel > summary').click() if not page.locator('.prize-panel').evaluate('(el)=>el.open') else None
                     assert page.locator('#prize-options li').count()>0
+                    assert page.locator('#prize-options .prize-combination img').count()>0
+                    assert '3×' in page.locator('#prize-options').inner_text()
                     ends=page.locator('#prize-options strong').evaluate_all('(els)=>els.map(el=>el.getBoundingClientRect().right)')
                     assert max(ends)-min(ends)<1
                 page.wait_for_function("document.querySelector('.machine').getBoundingClientRect().width>=440")

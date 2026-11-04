@@ -104,14 +104,27 @@ def campaign_state(conn):
     items = conn.execute(
         "SELECT id,name,symbol,total_quantity,stock,priority,chance_multiplier FROM prize_types WHERE active=true ORDER BY priority,id"
     ).fetchall()
-    current = next((item for item in items if item["stock"] > 0), None)
+    eligible = [item for item in items if item['stock']>0]
+    total_weight = sum(item['chance_multiplier'] for item in eligible)
+    base = settings['probability_bps']/10000
     for item in items:
-        item["probability"] = min(10000, settings["probability_bps"] * item["chance_multiplier"]) / 10000
+        share = item['chance_multiplier']/total_weight if item['stock']>0 and total_weight else 0
+        item['selection_probability'] = share
+        item['probability'] = base*share
     return {"stock": sum(item["stock"] for item in items),
             "total_stock": sum(item["total_quantity"] for item in items),
-            "prize_options": items, "current_prize": current, "base_probability": settings["probability_bps"] / 10000,
-            "probability": current["probability"] if current else 0,
+            "prize_options": items, "current_prize": None, "base_probability": base,
+            "probability": base if eligible else 0, "selection_mode": "random_weighted",
             "demo": not prizes_enabled(), "unlimited_spins": unlimited_demo()}
+
+
+def random_prize(available):
+    ticket = secrets.randbelow(sum(item['chance_multiplier'] for item in available))
+    for item in available:
+        if ticket < item['chance_multiplier']:
+            return item
+        ticket -= item['chance_multiplier']
+    raise RuntimeError('Invalid prize selection')
 
 
 @app.get("/health")
@@ -290,7 +303,7 @@ def spin(body: SpinRequest, request: Request):
         campaign = conn.execute("SELECT probability_bps FROM campaign WHERE id=1 FOR UPDATE").fetchone()
         available = conn.execute("SELECT id,name,symbol,stock,chance_multiplier FROM prize_types WHERE active=true AND stock>0 ORDER BY priority,id").fetchall()
         stock = sum(item["stock"] for item in available)
-        chance_bps = min(10000, campaign["probability_bps"] * available[0]["chance_multiplier"]) if available else 0
+        chance_bps = campaign["probability_bps"] if available else 0
         demo = not prizes_enabled()
         won = (not demo and stock > 0 and not already_won
                and secrets.randbelow(10000) < chance_bps)
@@ -298,8 +311,8 @@ def spin(body: SpinRequest, request: Request):
         awarded = None
         if won:
             code = accounts.withdrawal_code(conn, player) if account_user else player["claim_code_base"]
-            # The administrator defines the sequence; no random choice of prize type.
-            awarded = available[0]
+            # Weighted random type selection after the global win draw; stock is locked.
+            awarded = random_prize(available)
             conn.execute(
                 "INSERT INTO prizes (player_id,claim_code,prize_type_id,prize_name,prize_symbol) VALUES (%s,%s,%s,%s,%s)",
                 (player["id"], code, awarded["id"], awarded["name"], awarded["symbol"]))
@@ -317,6 +330,7 @@ def spin(body: SpinRequest, request: Request):
                   "max_spins": 3 + player["bonus_spins_earned"], "grid": grid, "spins_left": 0 if won else (3 if unlimited_demo() else player["spins_left"] - 1),
                   "won": bool(won), "demo": demo, "claim_code": code,
                   "spin_probability": chance_bps / 10000,
+                  "prize_selection_probability": awarded["chance_multiplier"]/sum(item["chance_multiplier"] for item in available) if awarded else None,
                   "prize_name": awarded["name"] if awarded else None,
                   "prize_symbol": awarded["symbol"] if awarded else None}
         if account_user:
@@ -412,7 +426,7 @@ def admin_settings_data(conn):
     settings = conn.execute("SELECT probability_bps,settings_version FROM campaign WHERE id=1").fetchone()
     items = conn.execute("SELECT id,name,symbol,total_quantity,stock,active,priority,chance_multiplier FROM prize_types ORDER BY priority,id").fetchall()
     return {"version": settings["settings_version"], "probability_percent": settings["probability_bps"] / 100,
-            "items": items, "demo": not prizes_enabled()}
+            "items": items, "demo": not prizes_enabled(), "selection_mode": "random_weighted"}
 
 
 @app.get("/api/admin/settings", dependencies=[Depends(require_admin)])
