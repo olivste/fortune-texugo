@@ -134,7 +134,7 @@ $('admin-form').addEventListener('submit', event => {
 });
 $('refresh').onclick = () => run(async () => { await loadDashboard(); $('status').textContent = 'Painel atualizado.'; });
 $('logout').onclick = () => {
-  adminKey = ''; settings = null;
+  adminKey = ''; settings = null;clearResetForm();
   $('dashboard').hidden = true; $('admin-form').hidden = false;
   $('prize-types').replaceChildren(); $('prizes').replaceChildren(); $('participants').replaceChildren(); $('verify-phone-form').reset();
   for(const id of ['promo-list','account-users','account-referrals','admin-history','admin-audit','suspicious-signals','retention-report','code-metrics'])$(id).replaceChildren();

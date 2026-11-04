@@ -33,3 +33,27 @@ $('account-status-form').onsubmit=event=>{event.preventDefault();run(async()=>{a
 $('export-redemptions').onclick=()=>run(async()=>{const response=await fetch('/api/admin/code-redemptions.csv',{headers:{'X-Admin-Key':adminKey},cache:'no-store'});if(!response.ok)throw Error('Falha ao exportar');const url=URL.createObjectURL(await response.blob());const link=document.createElement('a');link.href=url;link.download='resgates.csv';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('status').textContent='Exportação preparada.'});
 $('run-retention').onclick=()=>run(async()=>{const data=await adminRequest('retention/run',{});await loadAccountsAdmin();$('status').textContent=data.due?'Rotina executada. Confira as cópias externas no relatório.':'Prazo de eliminação ainda não atingido.'});
 $('backup-review-form').onsubmit=event=>{event.preventDefault();run(async()=>{await adminRequest('retention/backup-review',{evidence:$('backup-evidence').value});$('backup-review-form').reset();await loadAccountsAdmin();$('status').textContent='Conferência operacional registrada.'})};
+
+let resetVersion=null;
+let pendingCampaignReset=null;
+function clearResetForm(){resetVersion=null;pendingCampaignReset=null;$('reset-campaign-form').reset();$('reset-summary').textContent='Confira o resumo antes de confirmar.';$('reset-result').textContent=''}
+$('reset-preview').onclick=()=>run(async()=>{
+ const data=await adminRequest('reset-preview');resetVersion=data.version;pendingCampaignReset=null;
+ $('reset-summary').textContent=`Serão apagados ${data.players} participantes, ${data.spins} giros, ${data.prizes} prêmios e ${data.redemptions} resgates de cupons. Estoque após o reset: ${data.restored_stock} unidades cadastradas, incluindo itens pausados.`;
+ $('reset-campaign-form').reset();$('reset-result').textContent='';$('status').textContent='Confira o resumo e confirme somente se quiser executar o reset.';
+});
+$('reset-campaign-form').onsubmit=event=>{event.preventDefault();
+ if(resetVersion===null){$('reset-result').textContent='Clique em Conferir dados que serão apagados antes de confirmar.';return}
+ if($('reset-confirmation').value!=='RESETAR CAMPANHA'||!$('reset-understood').checked)return;
+ const reason=$('reset-reason').value.trim();
+ if(reason.length<5){$('reset-result').textContent='Informe uma justificativa com pelo menos cinco caracteres.';return}
+ const signature=JSON.stringify([resetVersion,reason]);
+ if(!pendingCampaignReset||pendingCampaignReset.signature!==signature)pendingCampaignReset={signature,operation_id:crypto.randomUUID()};
+ const body={confirmation:'RESETAR CAMPANHA',understood:true,reason,operation_id:pendingCampaignReset.operation_id,version:resetVersion};
+ run(async()=>{
+  const result=await adminRequest('reset-campaign',body);
+  clearResetForm();$('admin-history').textContent='';$('manage-user').value='';await loadDashboard();
+  $('reset-result').textContent=`Reset concluído: ${result.summary.players} participantes apagados. Estoque reposto. Configurações e auditoria preservadas.`;
+  $('status').textContent='Campanha resetada. Todos os participantes precisarão se cadastrar novamente.';
+ });
+};

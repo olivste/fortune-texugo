@@ -9,7 +9,7 @@ import secrets
 import unicodedata
 from datetime import datetime, timezone
 from uuid import UUID, uuid4
-from typing import Optional
+from typing import Optional, Literal
 
 import psycopg
 from argon2.exceptions import VerificationError, InvalidHashError
@@ -188,6 +188,14 @@ class Adjustment(BaseModel):
 class AccountStatus(BaseModel):
     status: str = Field(pattern='^(active|suspended)$')
     reason: str = Field(min_length=5, max_length=200)
+
+
+class CampaignReset(BaseModel):
+    confirmation: Literal['RESETAR CAMPANHA']
+    understood: Literal[True]
+    reason: str = Field(min_length=5, max_length=200)
+    operation_id: UUID
+    version: int = Field(ge=1)
 
 
 class RetentionHold(BaseModel):
@@ -474,6 +482,53 @@ def install(main):
         with main.connect() as conn:
             return {'rate_limits':conn.execute('SELECT scope,attempts,expires_at FROM request_limits WHERE attempts>=5 ORDER BY expires_at DESC LIMIT 100').fetchall(),
                     'referral_bursts':conn.execute("SELECT referrer_id,count(*) AS registrations FROM account_referrals WHERE created_at>now()-interval '1 hour' GROUP BY referrer_id HAVING count(*)>=3").fetchall()}
+
+    def reset_summary(conn):
+        return {'players':conn.execute('SELECT count(*) AS n FROM players').fetchone()['n'],
+                'spins':conn.execute('SELECT count(*) AS n FROM spins').fetchone()['n'],
+                'prizes':conn.execute('SELECT count(*) AS n FROM prizes').fetchone()['n'],
+                'redemptions':conn.execute('SELECT count(*) AS n FROM promo_redemptions').fetchone()['n'],
+                'restored_stock':conn.execute('SELECT coalesce(sum(total_quantity),0) AS n FROM prize_types').fetchone()['n'],
+                'version':conn.execute('SELECT settings_version FROM campaign WHERE id=1').fetchone()['settings_version']}
+
+    @router.get('/api/admin/reset-preview',dependencies=admin)
+    def reset_preview():
+        with main.connect() as conn:
+            return reset_summary(conn)
+
+    @router.post('/api/admin/reset-campaign',dependencies=admin)
+    def reset_campaign(body:CampaignReset):
+        try:
+            with main.connect() as conn:
+                conn.execute("SET LOCAL lock_timeout='8s'")
+                participation.serialize_referrals(conn)
+                previous=conn.execute("SELECT details FROM admin_changes WHERE action='campaign_reset' AND details->>'operation_id'=%s",(str(body.operation_id),)).fetchone()
+                if previous:
+                    if previous['details']['reason']!=body.reason or previous['details']['summary']['version']!=body.version:
+                        raise HTTPException(409,'Identificador de reset já utilizado com outros dados')
+                    return {'reset':True,'replayed':True,'summary':previous['details']['summary']}
+                # EXCLUSIVE blocks mutations and row-locking reads while ordinary reads can finish.
+                # Existing participant operations finish before any stock or campaign locks are taken.
+                conn.execute('LOCK TABLE players,accounts,account_sessions,referrals,phone_verifications,account_referrals,spin_ledger,'
+                             'promo_redemptions,cpf_retention_holds,spins,prizes,promo_codes,prize_types,campaign IN EXCLUSIVE MODE')
+                summary=reset_summary(conn)
+                if summary['version']!=body.version:
+                    raise HTTPException(409,'A campanha foi alterada. Atualize o resumo antes de confirmar o reset.')
+                held=conn.execute('SELECT count(*) AS n FROM cpf_retention_holds WHERE until_at>now()').fetchone()['n']
+                if held:
+                    raise HTTPException(409,'Há CPFs com conservação excepcional documentada. Revise essa conservação antes de apagar os participantes.')
+                # Explicit order; no CASCADE, no schema deletion, no identity reuse.
+                for table in ('promo_redemptions','account_referrals','account_sessions','cpf_retention_holds','phone_verifications',
+                              'referrals','spin_ledger','spins','prizes','accounts','players'):
+                    conn.execute('DELETE FROM '+table)
+                conn.execute('UPDATE promo_codes SET redeemed_count=0,version=version+1')
+                conn.execute('UPDATE prize_types SET stock=total_quantity')
+                conn.execute('UPDATE campaign SET settings_version=settings_version+1 WHERE id=1')
+                audit(conn,'campaign_reset',{'operation_id':str(body.operation_id),'reason':body.reason,'summary':summary,
+                                             'stock_restored':True,'coupons_preserved':True})
+                return {'reset':True,'replayed':False,'summary':summary}
+        except (psycopg.errors.LockNotAvailable,psycopg.errors.DeadlockDetected):
+            raise HTTPException(409,'A campanha está ocupada. Nenhum reset foi confirmado; tente novamente com a mesma operação.')
 
     @router.post('/api/admin/retention/run',dependencies=admin)
     def retention_run():

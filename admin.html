@@ -75,6 +75,18 @@
         <label class="checkbox"><input type="checkbox" required> Conferi o participante e o código presencialmente. Confirmo a entrega do prêmio.</label>
         <button type="submit">Confirmar entrega</button>
       </form>
+      <details class="danger-zone"><summary>RESETAR CAMPANHA</summary>
+        <p>Apaga todas as contas e sessões, giros, indicações, movimentações, resgates de cupons e prêmios concedidos, inclusive os códigos de retirada. Os participantes precisarão se cadastrar novamente.</p>
+        <p>O estoque será reposto às quantidades cadastradas. Prêmios, porcentagens, multiplicadores, cupons e auditoria serão preservados. Os contadores de resgate dos cupons voltarão a zero. Esta ação não pode ser desfeita pelo painel.</p>
+        <button id="reset-preview" type="button" class="secondary">Conferir dados que serão apagados</button>
+        <p id="reset-summary" role="status">Confira o resumo antes de confirmar.</p>
+        <form id="reset-campaign-form">
+          <label for="reset-reason">Justificativa do reset</label><input id="reset-reason" minlength="5" maxlength="200" required>
+          <label for="reset-confirmation">Digite RESETAR CAMPANHA</label><input id="reset-confirmation" pattern="RESETAR CAMPANHA" autocomplete="off" required>
+          <label class="checkbox"><input id="reset-understood" type="checkbox" required> Entendo que os participantes e os códigos de prêmio serão apagados e o estoque será reposto.</label>
+          <button type="submit" class="danger-button">Apagar participantes e repor estoque</button>
+        </form><p id="reset-result" role="status"></p>
+      </details>
     </div>
   </main>
   <script src="assets/content.js"></script>

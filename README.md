@@ -42,6 +42,14 @@ Abra `/admin.html`, localmente em <http://localhost:8080/admin.html>. Acesse com
 
 **Migração de participantes antigos:** cadastro por telefone e bearer tokens ficam desativados por padrão. Os dados antigos não são apagados nem transformados automaticamente em contas com CPF e senha desconhecidos. Prêmios antigos continuam consultáveis e resgatáveis no painel. Novas contas devem ser criadas pelo novo formulário. Vincular uma conta a um participante legado exige conferência e migração planejada pelo responsável, sem supor titularidade pelo telefone. `LEGACY_ACCOUNTS_ENABLED=true` existe somente para compatibilidade e testes isolados; não o habilite em implantação pública. O fluxo antigo de SMS permanece isolado para compatibilidade, sem ser chamado por novas contas.
 
+### Reset pelo administrador
+
+Na seção **RESETAR CAMPANHA**, confira o resumo, informe uma justificativa, digite `RESETAR CAMPANHA` e marque a confirmação. O reset apaga contas (inclusive legadas), sessões, giros, saldo/histórico, indicações, resgates de cupons e prêmios concedidos. Códigos de retirada anteriores deixam de existir; todos precisarão se cadastrar novamente.
+
+O estoque volta à quantidade total de cada prêmio, inclusive os pausados, que continuam pausados. Porcentagens, multiplicadores, catálogo e cupons são mantidos; contadores dos cupons voltam a zero. Auditoria administrativa, relatórios de retenção e limites antifraude são preservados. Não há exclusão de tabelas nem reuso dos IDs dos participantes. A ação é transacional, auditada e idempotente por `operation_id`; repetir uma operação confirmada não apaga cadastros feitos depois dela. Configurações alteradas desde a prévia exigem novo resumo. Conservações excepcionais de CPF ainda vigentes impedem o reset até revisão.
+
+Rotas protegidas: `GET /api/admin/reset-preview` e `POST /api/admin/reset-campaign` (`confirmation`, `understood`, `reason`, `operation_id`, `version`). O reset não apaga backups ou cópias externas. Implementar/publicar esse botão não executa o reset; a limpeza só acontece mediante confirmação no painel.
+
 ## Arquivos e personalização
 
 | Arquivo | Responsabilidade |
@@ -177,4 +185,4 @@ PG_BINDIR=/opt/homebrew/opt/postgresql@16/bin .venv/bin/python scripts/check_acc
 
 O primeiro script Python cria e remove um cluster PostgreSQL privado. Alternativamente, use `FORTUNE_TEST_DATABASE_URL` apontando para banco exclusivo de testes. Cada teste usa um schema descartável; sem essa configuração, os testes de banco são pulados. O teste de navegador requer `pip install playwright` e Chrome instalado; usa outro cluster e API temporários, sem alterar o banco da campanha nem conceder prêmios reais.
 
-Validação da implementação: **124 testes Python e 19 JavaScript passaram**, cobrindo validações, autenticação, CSRF, concorrência, indicações, limites de resgates, ajustes, migrações reaplicadas e eliminação de CPF. Teste real em Chrome passou para cadastro, sessão após recarga, indicação, resgate, giro, perfil, login/logout, painel e documentos, nas larguras 320, 390 e 1440. Isso não constitui teste de capacidade do Railway ou validação jurídica.
+Validação da implementação: **132 testes Python e 19 JavaScript passaram**, cobrindo validações, autenticação, CSRF, concorrência, indicações, limites de resgates, ajustes, migrações reaplicadas e eliminação de CPF. Teste real em Chrome passou para cadastro, sessão após recarga, indicação, resgate, giro, perfil, login/logout, painel e documentos, nas larguras 320, 390 e 1440. Isso não constitui teste de capacidade do Railway ou validação jurídica.

@@ -381,3 +381,98 @@ def test_prize_code_collision_preserves_previously_issued_code(setup_accounts,mo
     assert result.json()['claim_code']==code+'id'+str(data['user']['id'])
     with connect() as conn:
         assert conn.execute('SELECT claim_code FROM prizes WHERE player_id=%s',(legacy,)).fetchone()['claim_code']==code
+
+
+def reset_body(client,**changes):
+    preview=client.get('/api/admin/reset-preview',headers=headers()).json()
+    return {'confirmation':'RESETAR CAMPANHA','understood':True,'reason':'Reinício autorizado nos testes',
+            'operation_id':str(uuid4()),'version':preview['version'],**changes}
+
+
+def test_campaign_reset_deletes_participants_restores_stock_and_preserves_configuration(setup_accounts,monkeypatch):
+    _,connect=setup_accounts
+    parent,parent_data=actor()
+    friend,friend_data=actor(1,referral_instagram='pessoa_0')
+    promo(parent);redeem(parent)
+    monkeypatch.setenv('PRIZES_ENABLED','true')
+    assert spin(parent).json()['won'] is True
+    with connect() as conn:
+        conn.execute('UPDATE campaign SET probability_bps=4280')
+        conn.execute('UPDATE prize_types SET chance_multiplier=3')
+        legacy=conn.execute("INSERT INTO players(name,phone_digest,phone_last4,session_digest) VALUES('Legado',%s,'1234',%s) RETURNING id",('a'*64,'b'*64)).fetchone()['id']
+        conn.execute('INSERT INTO referrals(referred_id,referrer_id) VALUES(%s,%s)',(legacy,parent_data['user']['id']))
+        conn.execute('INSERT INTO phone_verifications(player_id,provider_sid) VALUES(%s,%s)',(legacy,'VE'+'a'*32))
+        conn.execute("INSERT INTO cpf_retention_holds(account_id,reason,legal_basis,until_at) VALUES(%s,'Conservação encerrada','Teste documentado',now()-interval '1 day')",(friend_data['user']['id'],))
+    body=reset_body(parent)
+    result=parent.post('/api/admin/reset-campaign',headers=headers(),json=body)
+    assert result.status_code==200,result.text
+    assert result.json()['summary']['players']==3 and result.json()['summary']['prizes']==1
+    assert parent.get('/api/account/me').status_code==401
+    assert friend.get('/api/account/me').status_code==401
+    with connect() as conn:
+        for table in ('players','accounts','account_sessions','spins','spin_ledger','prizes','account_referrals','referrals','phone_verifications','promo_redemptions','cpf_retention_holds'):
+            assert conn.execute('SELECT count(*) AS n FROM '+table).fetchone()['n']==0,table
+        assert conn.execute('SELECT probability_bps FROM campaign').fetchone()['probability_bps']==4280
+        prize=conn.execute('SELECT stock,total_quantity,chance_multiplier FROM prize_types').fetchone()
+        assert prize['stock']==prize['total_quantity']==5 and prize['chance_multiplier']==3
+        assert conn.execute('SELECT redeemed_count FROM promo_codes').fetchone()['redeemed_count']==0
+        assert conn.execute("SELECT count(*) AS n FROM admin_changes WHERE action='campaign_reset'").fetchone()['n']==1
+    # Same CPF/Instagram can register anew, with fresh IDs and three credits.
+    fresh,fresh_data=actor()
+    assert fresh_data['user']['id']>legacy and fresh_data['spins_left']==3
+    assert parent.post('/api/admin/reset-campaign',headers=headers(),json=body).json()['replayed'] is True
+    assert parent.post('/api/admin/reset-campaign',headers=headers(),json={**body,'reason':'Outra justificativa de reset'}).status_code==409
+    assert fresh.get('/api/account/me').status_code==200
+    assert redeem(fresh).json()['spins_left']==5
+
+
+@pytest.mark.parametrize('changes',[{'confirmation':'RESET'},{'understood':False},{'reason':'x'}])
+def test_reset_requires_explicit_confirmation_without_erasing_anything(setup_accounts,changes):
+    client,_=actor()
+    result=client.post('/api/admin/reset-campaign',headers=headers(),json=reset_body(client,**changes))
+    assert result.status_code==422
+    assert client.get('/api/account/me').status_code==200
+
+
+def test_reset_requires_admin_and_current_settings(setup_accounts):
+    client,connect=setup_accounts
+    user,_=actor()
+    body=reset_body(user)
+    assert user.get('/api/admin/reset-preview').status_code==403
+    assert user.post('/api/admin/reset-campaign',json=body).status_code==403
+    with connect() as conn:
+        conn.execute('UPDATE campaign SET settings_version=settings_version+1')
+    assert user.post('/api/admin/reset-campaign',headers=headers(),json=body).status_code==409
+    assert user.get('/api/account/me').status_code==200
+
+
+def test_reset_rolls_back_every_deletion_if_stock_update_fails(setup_accounts):
+    user,_=actor()
+    _,connect=setup_accounts
+    with connect() as conn:
+        conn.execute("CREATE FUNCTION fail_reset_stock() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test reset rollback'; END $$")
+        conn.execute('CREATE TRIGGER reject_reset BEFORE UPDATE ON prize_types FOR EACH ROW EXECUTE FUNCTION fail_reset_stock()')
+    client=TestClient(main.app,raise_server_exceptions=False)
+    result=client.post('/api/admin/reset-campaign',headers=headers(),json=reset_body(user))
+    assert result.status_code==500
+    assert user.get('/api/account/me').status_code==200
+    with connect() as conn:
+        assert conn.execute("SELECT count(*) AS n FROM admin_changes WHERE action='campaign_reset'").fetchone()['n']==0
+
+
+def test_concurrent_reset_with_same_operation_executes_only_once(setup_accounts):
+    user,_=actor()
+    body=reset_body(user)
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        results=list(pool.map(lambda _:user.post('/api/admin/reset-campaign',headers=headers(),json=body),range(6)))
+    assert all(result.status_code==200 for result in results)
+    assert sum(not result.json()['replayed'] for result in results)==1
+
+
+def test_reset_respects_active_documented_cpf_retention(setup_accounts):
+    user,data=actor()
+    _,connect=setup_accounts
+    with connect() as conn:
+        conn.execute("INSERT INTO cpf_retention_holds(account_id,reason,legal_basis,until_at) VALUES(%s,'Conservação vigente','Teste documentado',now()+interval '1 day')",(data['user']['id'],))
+    assert user.post('/api/admin/reset-campaign',headers=headers(),json=reset_body(user)).status_code==409
+    assert user.get('/api/account/me').status_code==200

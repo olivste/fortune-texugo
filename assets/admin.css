@@ -34,3 +34,5 @@ button:hover{background:var(--rf-yellow-light)}
 .secondary{background:transparent;color:var(--rf-yellow)}
 #probability-form{border-color:var(--rf-gold);background:linear-gradient(145deg,#48100d,#240b0b)}
 .catalog-item{background:#140707}pre{background:#0d0606}
+
+.danger-zone{border-color:#b84d4d;background:#35141433}.danger-zone>summary{color:#ffaaaa}.danger-zone .danger-button{background:#aa2525;border-color:#d75b5b;color:#fff}.danger-zone .danger-button:hover{background:#bf3030}#reset-campaign-form{background:#160b0b}#reset-result{color:#f2ce94;overflow-wrap:anywhere}

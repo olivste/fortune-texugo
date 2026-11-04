@@ -119,6 +119,16 @@ def main():
                 assert not errors,errors
                 for path in ('/termos','/privacidade'):
                     assert httpx.get(origin+path).status_code==200
+                adminpage.locator('.danger-zone > summary').click()
+                adminpage.locator('#reset-preview').click()
+                adminpage.wait_for_function("document.getElementById('reset-summary').textContent.includes('Serão apagados 2 participantes')")
+                adminpage.locator('#reset-reason').fill('Reset de teste no PostgreSQL descartável')
+                adminpage.locator('#reset-confirmation').fill('RESETAR CAMPANHA');adminpage.locator('#reset-understood').check()
+                adminpage.locator('#reset-campaign-form button').click()
+                adminpage.wait_for_function("document.getElementById('reset-result').textContent.includes('Reset concluído')")
+                assert adminpage.locator('#account-users li').count()==0
+                page.reload();page.locator('#open-registration').wait_for(state='visible');assert page.locator('#account-toolbar').is_hidden()
+                assert not errors,errors
                 browser.close()
             print('Browser checks passed: signup, cookies/reload, referral, promo, spin, login/logout, profile, admin, legal pages and widths 320/390/1440. Disposable data removed.')
         finally:
