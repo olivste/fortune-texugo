@@ -51,3 +51,26 @@ def decrypt_cpf(value):
         return Fernet(os.environ['CPF_ENCRYPTION_KEY'].encode()).decrypt(value.encode()).decode()
     except (KeyError, ValueError, InvalidToken):
         raise HTTPException(503, 'Não foi possível gerar o código de retirada. Tente novamente mais tarde.')
+
+
+def phone(value):
+    if not re.fullmatch(r'[0-9+().\-\s]+', value):
+        raise HTTPException(422, 'Informe telefone com DDD válido')
+    digits = re.sub(r'\D', '', value)
+    if len(digits) in (12, 13) and digits.startswith('55'):
+        digits = digits[2:]
+    if not re.fullmatch(r'[1-9]{2}(?:[2-5][0-9]{7}|9[0-9]{8})', digits):
+        raise HTTPException(422, 'Informe telefone com DDD válido')
+    return digits
+
+
+def phone_lookup(value):
+    key = os.environ.get('PHONE_PEPPER', '')
+    if len(key) < 32:
+        raise HTTPException(503, 'Cadastro indisponível: proteção de dados não configurada')
+    return hmac.new(key.encode(), ('account-phone:' + value).encode(), hashlib.sha256).hexdigest()
+
+
+# Same existing Fernet key, separate columns and domain-separated lookup for phones.
+encrypt_phone = encrypt_cpf
+decrypt_phone = decrypt_cpf

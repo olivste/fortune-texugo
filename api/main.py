@@ -170,7 +170,7 @@ def player_state(conn, player, prize=None):
 @app.post("/api/register", status_code=201)
 def register(body: Registration, request: Request):
     if os.environ.get('LEGACY_ACCOUNTS_ENABLED','false').lower() != 'true':
-        raise HTTPException(410, 'Use o cadastro de conta com CPF e Instagram')
+        raise HTTPException(410, 'Use o cadastro de conta com telefone e Instagram')
     name = body.name.strip()
     phone = normalize_phone(body.phone)
     if len(name) < 2:

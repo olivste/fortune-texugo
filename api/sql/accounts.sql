@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS accounts(
  CHECK(instagram=lower(instagram)),
  CHECK((cpf_lookup IS NULL)=(cpf_cipher IS NULL))
 );
+-- No inferred phone for existing CPF accounts. They keep Instagram login.
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_lookup CHAR(64);
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_cipher TEXT;
+ALTER TABLE accounts ADD COLUMN IF NOT EXISTS phone_last4 CHAR(4);
+CREATE UNIQUE INDEX IF NOT EXISTS accounts_phone_unique ON accounts(phone_lookup);
 CREATE TABLE IF NOT EXISTS account_sessions(
  token_digest CHAR(64) PRIMARY KEY,
  account_id BIGINT NOT NULL REFERENCES accounts(id),

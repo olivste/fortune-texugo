@@ -2,6 +2,7 @@
 let accountConfig={};
 function accountPrefillReferral(){try{$('referral-input').value=normalInstagram(new URL(location.href).searchParams.get('ref')||'')}catch{}}
 function accountApply(data){
+ $('profile-phone').textContent=data.user.phone_masked?'Telefone: '+data.user.phone_masked:'';$('profile-phone-form').hidden=!!data.user.phone_masked;
  csrfToken=data.csrf_token||csrfToken;token='account:'+data.user.id;left=data.spins_left;hasPrize=!!data.prize;
  $('registration').close();$('registration').classList.remove('hidden');$('registration-start').hidden=true;
  $('account-toolbar').hidden=false;$('account-name').textContent=data.user.name+' · @'+data.user.instagram;
@@ -12,6 +13,7 @@ function accountApply(data){
  $('profile-balance').textContent=`Giros disponíveis: ${data.spins_left}`;
 }
 function accountClear(){
+ $('profile-phone').textContent='';$('profile-phone-status').textContent='';$('profile-phone-form').reset();$('profile-phone-form').hidden=true;
  token='';csrfToken='';left=0;hasPrize=false;requiresVerification=false;
  $('account-toolbar').hidden=true;$('referral-panel').hidden=true;$('registration-start').hidden=false;
  $('winner').classList.add('hidden');$('prize-details').hidden=true;
@@ -20,9 +22,9 @@ function accountClear(){
 }
 function accountOpenLogin(){if(!$('login-dialog').open)$('login-dialog').showModal()}
 function accountOpenRedeem(){if(!token)return accountOpenLogin();if(!$('redeem-dialog').open)$('redeem-dialog').showModal()}
-function validCPF(value){
- const cpf=value.replace(/\D/g,'');if(!/^\d{11}$/.test(cpf)||/^(\d)\1{10}$/.test(cpf))return false;
- for(const size of [9,10]){let sum=0;for(let i=0;i<size;i++)sum+=Number(cpf[i])*(size+1-i);let digit=sum*10%11;if(digit===10)digit=0;if(digit!==Number(cpf[size]))return false}return true;
+function validPhone(value){
+ let digits=value.replace(/\D/g,'');if(digits.startsWith('55')&&[12,13].includes(digits.length))digits=digits.slice(2);
+ return /^[1-9]{2}(?:[2-5][0-9]{7}|9[0-9]{8})$/.test(digits)&&/^[0-9+().\-\s]+$/.test(value);
 }
 function normalInstagram(value){return value.trim().replace(/^@+/,'').toLowerCase()}
 function accountSetup(config){
@@ -37,14 +39,14 @@ function accountSetup(config){
  accountPrefillReferral();
  $('form').onsubmit=async event=>{
   event.preventDefault();$('registration-error').textContent='';
-  const cpf=$('cpf').value;if(!validCPF(cpf))return registrationError('CPF inválido. Confira os dígitos.');
+  const phone=$('account-phone').value;if(!validPhone(phone))return registrationError('Informe telefone com DDD válido.');
   const instagram=normalInstagram($('instagram').value);const referral=normalInstagram($('referral-input').value);
   if(!/^[a-z0-9_](?:[a-z0-9_.]{0,28}[a-z0-9_])?$/.test(instagram)||instagram.includes('..'))return registrationError('Instagram inválido.');
   if(referral===instagram)return registrationError('Você não pode indicar a si mesmo.');
   if($('password').value!==$('password-confirmation').value)return registrationError('As senhas não conferem.');
   const button=$('form').querySelector('button');button.disabled=true;
   try{
-   const data=await call('account/register',{name:$('name').value.trim(),cpf,instagram,password:$('password').value,password_confirmation:$('password-confirmation').value,
+   const data=await call('account/register',{name:$('name').value.trim(),phone,instagram,password:$('password').value,password_confirmation:$('password-confirmation').value,
     referral_instagram:referral,terms_accepted:$('accept-terms').checked,adult:$('adult').checked,terms_version:config.terms_version,privacy_version:config.privacy_version});
    accountApply(data);$('form').reset();msg('Conta criada! Seus três giros estão disponíveis.');
   }catch(error){registrationError(error.message)}finally{button.disabled=false}
@@ -54,7 +56,7 @@ $('login-close').onclick=()=>$('login-dialog').close();
 $('login-signup').onclick=()=>{$('login-dialog').close();$('registration').classList.remove('hidden');$('registration').showModal()};
 $('login-form').onsubmit=async event=>{
  event.preventDefault();const button=$('login-form').querySelector('button');button.disabled=true;$('login-error').textContent='';
- try{const identifier=$('login-identifier').value.trim();const data=await call('account/login',{...(/^[\d.\-\s]+$/.test(identifier)?{cpf:identifier}:{instagram:normalInstagram(identifier)}),password:$('login-password').value});
+ try{const identifier=$('login-identifier').value.trim();const data=await call('account/login',{...(/^[\d+().\-\s]+$/.test(identifier)?{phone:identifier}:{instagram:normalInstagram(identifier)}),password:$('login-password').value});
  accountApply(data);$('login-dialog').close();$('login-form').reset();msg('Você entrou!');showEndOfSpins();
  }catch(error){$('login-error').textContent=error.message}finally{button.disabled=false}
 };
@@ -71,3 +73,9 @@ $('profile-close').onclick=()=>$('profile-dialog').close();
 $('open-profile').onclick=()=>{if(!token)return accountOpenLogin();$('profile-balance').textContent=`Giros disponíveis: ${hasPrize?0:left}`;$('profile-dialog').showModal()};
 
 window.dispatchEvent(new Event('fortune:accounts-ready'));
+
+$('profile-phone-form').onsubmit=async event=>{
+ event.preventDefault();const button=event.currentTarget.querySelector('button');button.disabled=true;
+ try{const data=await call('account/phone',{phone:$('profile-new-phone').value});accountApply(data);$('profile-phone-status').textContent='Telefone salvo. Você já pode usá-lo para entrar.';$('profile-phone-form').reset()}
+ catch(error){$('profile-phone-status').textContent=error.message}finally{button.disabled=false}
+};

@@ -20,7 +20,7 @@ async function loadAccountsAdmin(){
   $('promo-list').append(form);
  }
  $('account-users').replaceChildren();
- for(const user of users){const li=document.createElement('li');const text=document.createElement('span');text.textContent=`#${user.id} ${user.name} · @${user.instagram} · CPF ${user.cpf_masked} · cadastro ${new Date(user.created_at).toLocaleString('pt-BR')} · ${user.status} · saldo ${user.spins_left} · ${user.spins_played} giros realizados · ${user.referral_spins} por indicação · ${user.promo_spins} por códigos `;
+ for(const user of users){const li=document.createElement('li');const text=document.createElement('span');text.textContent=`#${user.id} ${user.name} · @${user.instagram} · Telefone ${user.phone_masked} · cadastro ${new Date(user.created_at).toLocaleString('pt-BR')} · ${user.status} · saldo ${user.spins_left} · ${user.spins_played} giros realizados · ${user.referral_spins} por indicação · ${user.promo_spins} por códigos `;
  const pick=document.createElement('button');pick.type='button';pick.textContent='Selecionar / histórico';pick.onclick=()=>run(async()=>{$('manage-user').value=user.id;$('admin-history').textContent=JSON.stringify(await adminRequest('users/'+user.id+'/history'),null,2)});li.append(text,pick);$('account-users').append(li)}
  adminTextList('account-referrals',referrals,row=>`@${row.referred} → @${row.referrer} · ${row.status}${row.reason?' · '+row.reason:''}`);
  $('admin-audit').textContent=JSON.stringify(audit,null,2);$('suspicious-signals').textContent=JSON.stringify(signals,null,2);$('retention-report').textContent=JSON.stringify(retention,null,2);

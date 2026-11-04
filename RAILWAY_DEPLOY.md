@@ -58,7 +58,7 @@ O healthcheck `/health` já está em `railway.json`. Ele confirma banco e servid
 ## 6. Antes de abrir a campanha
 
 - Revise as minutas de termos e privacidade, a base legal, fornecedores e o regulamento aplicável. O responsável e o contato já foram informados; isso não encerra a revisão jurídica.
-- Confirme a data de encerramento: a rotina elimina CPF e encerra novos cadastros com CPF em **05/12/2026 às 00h de São Paulo**. O login posterior continua por Instagram e senha.
+- Confirme a data de encerramento: a rotina elimina os CPFs de contas anteriores em **05/12/2026 às 00h de São Paulo**. Novos cadastros usam telefone com DDD. Contas anteriores acessam por Instagram e podem adicionar telefone no perfil. Preserve `PHONE_PEPPER` e `CPF_ENCRYPTION_KEY`, também utilizados para proteger os telefones.
 - Configure backups do PostgreSQL no Railway e documente retenção/exclusão de snapshots, logs e exportações. A aplicação não tem acesso automático a cópias externas.
 - Teste os limites de requisições no domínio e a configuração de proxies confiáveis.
 - Configure o estoque real e as porcentagens aprovadas no painel. A chance geral não é multiplicada pelos pesos: com 99%, o giro tem 99% de chance de ganhar; o peso apenas distribui qual prêmio sai.

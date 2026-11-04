@@ -19,8 +19,19 @@ def make_cpf(number):
     return value
 
 
+def make_phone(number):
+    return f'279{10000000+number:08d}'
+
+
+def legacy_cpf(connect, uid):
+    value=make_cpf(0)
+    with connect() as conn:
+        conn.execute('UPDATE accounts SET cpf_cipher=%s,cpf_lookup=%s,cpf_last2=%s WHERE id=%s',
+                     (security.encrypt_cpf(value),security.cpf_lookup(value),value[-2:],uid))
+
+
 def payload(n=0,**extra):
-    return {'name':'Pessoa Teste','cpf':make_cpf(n),'instagram':f'pessoa_{n}',
+    return {'name':'Pessoa Teste','phone':make_phone(n),'instagram':f'pessoa_{n}',
             'password':'test-password-123','password_confirmation':'test-password-123',
             'terms_accepted':True,'adult':True,'terms_version':'2026-11-04','privacy_version':'2026-11-04',**extra}
 
@@ -70,18 +81,19 @@ def test_signup_hash_encryption_cookie_and_ledger(setup_accounts):
         account=conn.execute('SELECT * FROM accounts').fetchone()
         assert account['password_hash'].startswith('$argon2id$')
         assert security.PASSWORDS.verify(account['password_hash'],'test-password-123')
-        assert make_cpf(0) not in account['cpf_cipher']
-        assert Fernet(os.environ['CPF_ENCRYPTION_KEY'].encode()).decrypt(account['cpf_cipher'].encode()).decode()==make_cpf(0)
+        assert make_phone(0) not in account['phone_cipher']
+        assert account['cpf_cipher'] is None
+        assert Fernet(os.environ['CPF_ENCRYPTION_KEY'].encode()).decrypt(account['phone_cipher'].encode()).decode()==make_phone(0)
         assert account['accepted_at'] and account['adult_declared_at']
         assert conn.execute('SELECT amount,balance,kind FROM spin_ledger').fetchone()=={'amount':3,'balance':3,'kind':'CADASTRO'}
     serialized=str(data)
-    assert 'password_hash' not in serialized and 'cpf_cipher' not in serialized and make_cpf(0) not in serialized
-    login=client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'})
+    assert 'password_hash' not in serialized and 'cpf_cipher' not in serialized and 'phone_cipher' not in serialized and make_phone(0) not in serialized
+    login=client.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'})
     assert 'HttpOnly' in login.headers['set-cookie'] and 'SameSite=lax' in login.headers['set-cookie']
 
 
 @pytest.mark.parametrize('extra',[
-    {'cpf':'11111111111'},{'cpf':'12345678900'},{'cpf':'abc12345678900'},
+    {'phone':'11111111111'},{'phone':'279123'},{'phone':'abc27910000000'},
     {'instagram':'bad..name'},{'instagram':'name with space'},{'instagram':'.invalid'},
     {'password':'short','password_confirmation':'short'},{'password_confirmation':'mismatched'},
     {'adult':False},{'terms_accepted':False},{'name':'Pessoa'},
@@ -93,24 +105,24 @@ def test_signup_invalid_fields(setup_accounts,extra):
     assert 'test-password-123' not in response.text
 
 
-def test_cpf_and_instagram_unique_and_normalized(setup_accounts):
+def test_phone_and_instagram_unique_and_normalized(setup_accounts):
     client,_=setup_accounts
     actor()
-    assert client.post('/api/account/register',json=payload(1,cpf=make_cpf(0))).status_code==409
+    assert client.post('/api/account/register',json=payload(1,phone='+55 (27) 91000-0000')).status_code==409
     assert client.post('/api/account/register',json=payload(2,instagram=' @PESSOA_0 ')).status_code==409
 
 
 def test_login_bad_password_logout_csrf_and_expiry(setup_accounts):
     _,connect=setup_accounts
     client,data=actor()
-    assert client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'wrong-password'}).status_code==401
+    assert client.post('/api/account/login',json={'phone':make_phone(0),'password':'wrong-password'}).status_code==401
     client.headers.pop('X-CSRF-Token')
     assert spin(client).status_code==403
     client.headers['X-CSRF-Token']=data['csrf_token']
     assert client.post('/api/account/logout',json={}).status_code==200
     assert client.get('/api/account/me').status_code==401
     assert spin(client).status_code==401
-    result=client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'})
+    result=client.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'})
     assert result.status_code==200
     client.headers['X-CSRF-Token']=result.json()['csrf_token']
     with connect() as conn:
@@ -123,7 +135,7 @@ def test_no_login_or_legacy_bypass_and_cross_origin(setup_accounts):
     assert spin(client).status_code==401
     assert client.post('/api/register',json={'name':'Pessoa Teste','phone':'27900000000'}).status_code==410
     assert client.post('/api/account/register',headers={'Origin':'https://evil.example'},json=payload()).status_code==403
-    assert client.post('/api/account/login',data={'cpf':make_cpf(0),'password':'secret'}).status_code==415
+    assert client.post('/api/account/login',data={'phone':make_phone(0),'password':'secret'}).status_code==415
 
 
 def test_three_spins_concurrent_exact_debit_and_replay(setup_accounts):
@@ -225,7 +237,7 @@ def test_admin_balance_adjustment_audit_idempotence_and_suspension(setup_account
     assert client.post(path,headers=headers(),json={'amount':-2,'reason':'Remoção teste','operation_id':str(uuid4())}).json()['spins_left']==3
     assert client.put(f'/api/admin/users/{uid}/status',headers=headers(),json={'status':'suspended','reason':'Teste suspensão'}).status_code==200
     assert spin(client).status_code in (401,403)
-    assert client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'}).status_code==403
+    assert client.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'}).status_code==403
     assert client.get('/api/admin/audit',headers=headers()).json()
 
 
@@ -249,6 +261,7 @@ def test_code_edits_preserve_old_redemptions_and_csv(setup_accounts):
 def test_retention_deletes_all_cpf_identifiers_and_managed_backup(setup_accounts,tmp_path,monkeypatch):
     client,connect=setup_accounts
     user,data=actor()
+    legacy_cpf(connect,data['user']['id'])
     archive=tmp_path/'test.backup';archive.write_text('fake encrypted archive')
     (tmp_path/'test.fortune-backup.json').write_text('{"archive":"test.backup","expires_at":"2026-12-05T03:00:00+00:00"}')
     monkeypatch.setenv('MANAGED_BACKUP_DIRECTORY',str(tmp_path))
@@ -262,13 +275,15 @@ def test_retention_deletes_all_cpf_identifiers_and_managed_backup(setup_accounts
         assert row['cpf_deleted_at']
     assert user.post('/api/account/login',json={'instagram':'pessoa_0','password':'test-password-123'}).status_code==200
     assert user.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'}).status_code==401
+    assert user.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'}).status_code==200
     monkeypatch.setattr(accounts,'now',lambda:accounts.DEADLINE)
-    assert client.post('/api/account/register',json=payload(1)).status_code==409
+    assert client.post('/api/account/register',json=payload(1)).status_code==201
 
 
 def test_documented_hold_expires_and_cleanup_continues(setup_accounts):
     client,connect=setup_accounts
     user,data=actor();uid=data['user']['id']
+    legacy_cpf(connect,uid)
     assert client.put(f'/api/admin/users/{uid}/cpf-hold',headers=headers(),json={'reason':'Conservação documentada para teste','legal_basis':'Obrigação legal documentada','until_at':'2026-12-06T00:00:00Z'}).status_code==200
     assert retention.cleanup(connect,accounts.DEADLINE)['deleted']==0
     assert retention.cleanup(connect,accounts.DEADLINE+timedelta(days=2))['deleted']==1
@@ -283,7 +298,7 @@ def test_reapply_migration_preserves_accounts_balances_codes_and_login(setup_acc
     assert user.get('/api/account/me').json()['spins_left']==4
     with connect() as conn:
         assert conn.execute('SELECT sum(amount) AS balance FROM spin_ledger').fetchone()['balance']==4
-    assert user.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'}).status_code==200
+    assert user.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'}).status_code==200
     assert client.get('/api/admin/codes',headers=headers()).json()['metrics']['redemptions']==1
 
 
@@ -306,8 +321,8 @@ def test_login_rate_limit_persists_failed_attempts(setup_accounts,monkeypatch):
     client,_=actor()
     monkeypatch.setenv('RATE_LIMIT_ENABLED','true')
     for _ in range(8):
-        assert client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'incorrect-password'}).status_code==401
-    assert client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'}).status_code==429
+        assert client.post('/api/account/login',json={'phone':make_phone(0),'password':'incorrect-password'}).status_code==401
+    assert client.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'}).status_code==429
 
 
 def test_secure_cookie_document_versions_and_no_sensitive_spin_snapshots(setup_accounts,monkeypatch):
@@ -319,7 +334,7 @@ def test_secure_cookie_document_versions_and_no_sensitive_spin_snapshots(setup_a
     with connect() as conn:
         assert 'cpf_masked' not in str(conn.execute('SELECT response FROM spins').fetchone()['response'])
     monkeypatch.setenv('COOKIE_SECURE','true')
-    response=client.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'})
+    response=client.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'})
     assert 'Secure' in response.headers['set-cookie'] and 'HttpOnly' in response.headers['set-cookie']
 
 
@@ -351,14 +366,14 @@ def test_coupon_created_without_dates_is_immediately_redeemable(setup_accounts):
     assert client.put('/api/admin/codes/'+str(row['id']),headers=headers(),json=settings).status_code==200
 
 
-def test_prize_code_uses_name_and_last_three_cpf_digits(setup_accounts,monkeypatch):
+def test_prize_code_uses_name_and_last_three_phone_digits(setup_accounts,monkeypatch):
     _,connect=setup_accounts
     user,data=actor(name='João da Silva')
     monkeypatch.setenv('PRIZES_ENABLED','true')
     key=uuid4()
     result=spin(user,key)
     assert result.status_code==200
-    code='joaodasilva'+make_cpf(0)[-3:]
+    code='joaodasilva'+make_phone(0)[-3:]
     assert result.json()['claim_code']==code
     assert spin(user,key).json()['claim_code']==code
     assert user.get('/api/account/me').json()['prize']['claim_code']==code
@@ -373,7 +388,7 @@ def test_prize_code_collision_preserves_previously_issued_code(setup_accounts,mo
     user,data=actor()
     with connect() as conn:
         legacy=conn.execute("INSERT INTO players(name,session_digest,claim_code_base) VALUES('Pessoa Teste',%s,'old') RETURNING id",('x'*64,)).fetchone()['id']
-        code='pessoateste'+make_cpf(0)[-3:]
+        code='pessoateste'+make_phone(0)[-3:]
         conn.execute('INSERT INTO prizes(player_id,claim_code) VALUES(%s,%s)',(legacy,code))
     monkeypatch.setenv('PRIZES_ENABLED','true')
     result=spin(user)
@@ -476,3 +491,48 @@ def test_reset_respects_active_documented_cpf_retention(setup_accounts):
         conn.execute("INSERT INTO cpf_retention_holds(account_id,reason,legal_basis,until_at) VALUES(%s,'Conservação vigente','Teste documentado',now()+interval '1 day')",(data['user']['id'],))
     assert user.post('/api/admin/reset-campaign',headers=headers(),json=reset_body(user)).status_code==409
     assert user.get('/api/account/me').status_code==200
+
+
+def test_existing_account_can_add_phone_without_losing_balance_or_history(setup_accounts):
+    client,connect=setup_accounts
+    user,data=actor()
+    uid=data['user']['id']
+    legacy_cpf(connect,uid)
+    with connect() as conn:
+        conn.execute('UPDATE accounts SET phone_cipher=NULL,phone_lookup=NULL,phone_last4=NULL WHERE id=%s',(uid,))
+    assert user.post('/api/account/login',json={'instagram':'pessoa_0','password':'test-password-123'}).status_code==200
+    user.headers['X-CSRF-Token']=user.get('/api/account/me').json()['csrf_token']
+    assert user.post('/api/account/phone',json={'phone':'+55 (27) 91000-0000'}).status_code==200
+    assert user.post('/api/account/phone',json={'phone':make_phone(1)}).status_code==409
+    result=user.post('/api/account/login',json={'phone':make_phone(0),'password':'test-password-123'})
+    assert result.status_code==200 and result.json()['spins_left']==3
+    assert result.json()['user']['id']==uid
+    with connect() as conn:
+        assert conn.execute('SELECT count(*) AS n FROM spin_ledger').fetchone()['n']==1
+
+
+def test_phone_binding_requires_session_csrf_and_unique_number(setup_accounts):
+    client,connect=setup_accounts
+    first,_=actor()
+    second,data=actor(1)
+    assert client.post('/api/account/phone',json={'phone':make_phone(2)}).status_code==401
+    second.headers.pop('X-CSRF-Token')
+    assert second.post('/api/account/phone',json={'phone':make_phone(2)}).status_code==403
+    second.headers['X-CSRF-Token']=data['csrf_token']
+    with connect() as conn:
+        conn.execute('UPDATE accounts SET phone_cipher=NULL,phone_lookup=NULL,phone_last4=NULL WHERE id=%s',(data['user']['id'],))
+    assert second.post('/api/account/phone',json={'phone':make_phone(0)}).status_code==409
+    assert second.get('/api/account/me').json()['user']['phone_masked'] is None
+
+
+def test_old_cpf_login_and_prize_code_still_work(setup_accounts,monkeypatch):
+    _,connect=setup_accounts
+    user,data=actor()
+    uid=data['user']['id'];legacy_cpf(connect,uid)
+    with connect() as conn:
+        conn.execute('UPDATE accounts SET phone_cipher=NULL,phone_lookup=NULL,phone_last4=NULL WHERE id=%s',(uid,))
+    result=user.post('/api/account/login',json={'cpf':make_cpf(0),'password':'test-password-123'})
+    assert result.status_code==200
+    user.headers['X-CSRF-Token']=result.json()['csrf_token']
+    monkeypatch.setenv('PRIZES_ENABLED','true')
+    assert spin(user).json()['claim_code']=='pessoateste'+make_cpf(0)[-3:]

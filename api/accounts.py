@@ -86,15 +86,15 @@ def movement(conn, player_id, kind, amount, source, operation, allow_winner=Fals
 
 
 def withdrawal_code(conn, player):
-    account = conn.execute('SELECT cpf_cipher FROM accounts WHERE id=%s', (player['id'],)).fetchone()
-    # After scheduled CPF erasure, preserve the opaque identifier already assigned.
-    if not account or not account['cpf_cipher']:
+    account = conn.execute('SELECT cpf_cipher,phone_cipher FROM accounts WHERE id=%s', (player['id'],)).fetchone()
+    # Prefer phone; legacy CPF accounts retain their previous rule until erasure.
+    if not account or not (account['phone_cipher'] or account['cpf_cipher']):
         return player['claim_code_base']
-    cpf = security.decrypt_cpf(account['cpf_cipher'])
+    identifier = security.decrypt_phone(account['phone_cipher']) if account['phone_cipher'] else security.decrypt_cpf(account['cpf_cipher'])
     plain = unicodedata.normalize('NFKD',player['name']).encode('ascii','ignore').decode().lower()
-    base = (re.sub(r'[^a-z]','',plain) or 'participante') + cpf[-3:]
+    base = (re.sub(r'[^a-z]','',plain) or 'participante') + identifier[-3:]
     code = base
-    # Equal names and CPF suffixes can coincide. Keep all issued codes unambiguous.
+    # Equal names and identifier suffixes can coincide. Keep all issued codes unambiguous.
     suffix = 0
     while conn.execute('SELECT id FROM prizes WHERE lower(claim_code)=lower(%s) OR lower(legacy_claim_code)=lower(%s)', (code,code)).fetchone():
         suffix += 1
@@ -105,13 +105,13 @@ def withdrawal_code(conn, player):
 
 def profile(main, conn, account_id):
     player = lock_account(conn, account_id)
-    account = conn.execute('SELECT terms_version,privacy_version,accepted_at,cpf_last2,cpf_deleted_at FROM accounts WHERE id=%s', (account_id,)).fetchone()
+    account = conn.execute('SELECT terms_version,privacy_version,accepted_at,cpf_last2,cpf_deleted_at,phone_last4 FROM accounts WHERE id=%s', (account_id,)).fetchone()
     prize = conn.execute('SELECT claim_code,redeemed_at,prize_name,prize_symbol FROM prizes WHERE player_id=%s', (account_id,)).fetchone()
     counts = conn.execute("SELECT count(*) AS total,count(*) FILTER(WHERE status='credited') AS credited,"
                           "count(*) FILTER(WHERE status='pending') AS pending FROM account_referrals WHERE referrer_id=%s", (account_id,)).fetchone()
     extra = conn.execute("SELECT coalesce(sum(amount),0) AS n FROM spin_ledger WHERE player_id=%s AND kind='CODIGO_PROMOCIONAL'", (account_id,)).fetchone()['n']
     return {**main.campaign_state(conn), 'authenticated': True, 'user': {'id': account_id, 'name': player['name'],
-            'instagram': player['instagram'], 'cpf_masked': '***.***.***-' + account['cpf_last2'] if account['cpf_last2'] else 'Eliminado',
+            'instagram': player['instagram'], 'phone_masked': '(**) *****-' + account['phone_last4'] if account['phone_last4'] else None, 'cpf_masked': '***.***.***-' + account['cpf_last2'] if account['cpf_last2'] else 'Eliminado',
             'status': player['status'], **{k: account[k] for k in ('terms_version','privacy_version','accepted_at')}},
             'spins_left': 0 if prize else player['spins_left'], 'max_spins': 3+counts['credited']+extra,
             'referral_code': '@'+player['instagram'], 'referrals_total': counts['total'], 'referrals_pending': counts['pending'],
@@ -122,7 +122,7 @@ def profile(main, conn, account_id):
 
 class Signup(BaseModel):
     name: str = Field(min_length=3, max_length=80)
-    cpf: str = Field(min_length=11, max_length=18)
+    phone: str = Field(min_length=10, max_length=25)
     instagram: str = Field(min_length=1, max_length=40)
     password: str = Field(min_length=8, max_length=128)
     password_confirmation: str = Field(min_length=8, max_length=128)
@@ -144,7 +144,12 @@ class Signup(BaseModel):
         return self
 
 
+class AccountPhone(BaseModel):
+    phone: str = Field(min_length=10, max_length=25)
+
+
 class Login(BaseModel):
+    phone: str = Field(default='', max_length=25)
     cpf: str = Field(default='', max_length=18)
     instagram: str = Field(default='', max_length=40)
     password: str = Field(min_length=1, max_length=128)
@@ -246,18 +251,16 @@ def install(main):
     @router.post('/api/account/register', status_code=201)
     def register(body: Signup, request: Request, response: Response):
         limited(request, 'account-register', maximum=20)
-        if now() >= DEADLINE:
-            raise HTTPException(409, 'O período de cadastro com CPF foi encerrado')
-        cpf = security.cpf(body.cpf)
-        lookup = security.cpf_lookup(cpf)
-        limited(request, 'account-register-cpf', lookup, 5)
+        phone = security.phone(body.phone)
+        lookup = security.phone_lookup(phone)
+        limited(request, 'account-register-phone', lookup, 5)
         instagram = security.instagram(body.instagram)
         referral = security.instagram(body.referral_instagram) if body.referral_instagram.strip() else ''
         if referral == instagram:
             raise HTTPException(422, 'Você não pode indicar a si mesmo')
         if body.terms_version != os.environ.get('TERMS_VERSION','2026-11-04') or body.privacy_version != os.environ.get('PRIVACY_VERSION','2026-11-04'):
             raise HTTPException(409, 'Os documentos foram atualizados. Recarregue e leia novamente.')
-        encrypted = security.encrypt_cpf(cpf)
+        encrypted = security.encrypt_phone(phone)
         password_hash = security.PASSWORDS.hash(body.password)
         with main.connect() as conn:
             participation.serialize_referrals(conn)
@@ -267,10 +270,10 @@ def install(main):
             try:
                 player_id = conn.execute('INSERT INTO players(name,session_digest,claim_code_base,spins_left) VALUES(%s,%s,%s,0) RETURNING id',
                                          (body.name, fingerprint(secrets.token_urlsafe(48)), 'FT'+secrets.token_hex(12).upper())).fetchone()['id']
-                conn.execute('INSERT INTO accounts(id,cpf_lookup,cpf_cipher,cpf_last2,instagram,password_hash,terms_version,privacy_version) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)',
-                             (player_id,lookup,encrypted,cpf[-2:],instagram,password_hash,body.terms_version,body.privacy_version))
+                conn.execute('INSERT INTO accounts(id,phone_lookup,phone_cipher,phone_last4,instagram,password_hash,terms_version,privacy_version) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)',
+                             (player_id,lookup,encrypted,phone[-4:],instagram,password_hash,body.terms_version,body.privacy_version))
             except psycopg.errors.UniqueViolation:
-                raise HTTPException(409, 'CPF ou Instagram já cadastrado. Faça login.')
+                raise HTTPException(409, 'Telefone ou Instagram já cadastrado. Faça login.')
             movement(conn, player_id, 'CADASTRO', 3, 'Cadastro gratuito', 'signup')
             if parent:
                 conn.execute('INSERT INTO account_referrals(referred_id,referrer_id) VALUES(%s,%s)', (player_id,parent['id']))
@@ -281,7 +284,9 @@ def install(main):
     @router.post('/api/account/login')
     def login(body: Login, request: Request, response: Response):
         limited(request,'login-ip', maximum=30, seconds=900)
-        if body.cpf:
+        if body.phone:
+            query, key = 'phone_lookup', security.phone_lookup(security.phone(body.phone))
+        elif body.cpf:
             lookup = security.cpf_lookup(security.cpf(body.cpf))
             query, key = 'cpf_lookup', lookup
         else:
@@ -294,7 +299,7 @@ def install(main):
             except (VerificationError, InvalidHashError):
                 valid = False
             if not user or not valid:
-                raise HTTPException(401,'CPF/Instagram ou senha incorretos')
+                raise HTTPException(401,'Telefone/Instagram ou senha incorretos')
             if user['status'] != 'active':
                 raise HTTPException(403,'Conta suspensa. Entre em contato com a organização.')
             # Serialize with suspension; a concurrent suspension cannot leave a usable session.
@@ -311,6 +316,23 @@ def install(main):
         user=authenticate(main,request)
         with main.connect() as conn:
             return {**profile(main,conn,user['id']), 'csrf_token':user['csrf_token']}
+
+    @router.post('/api/account/phone')
+    def add_phone(body: AccountPhone, request: Request):
+        user = authenticate(main, request, write=True)
+        limited(request, 'account-add-phone', str(user['id']), 5)
+        phone = security.phone(body.phone)
+        with main.connect() as conn:
+            lock_account(conn, user['id'])
+            current = conn.execute('SELECT phone_lookup FROM accounts WHERE id=%s', (user['id'],)).fetchone()
+            if current['phone_lookup']:
+                raise HTTPException(409, 'Esta conta já possui telefone cadastrado')
+            try:
+                conn.execute('UPDATE accounts SET phone_lookup=%s,phone_cipher=%s,phone_last4=%s WHERE id=%s',
+                             (security.phone_lookup(phone), security.encrypt_phone(phone), phone[-4:], user['id']))
+            except psycopg.errors.UniqueViolation:
+                raise HTTPException(409, 'Telefone já cadastrado em outra conta')
+            return profile(main, conn, user['id'])
 
     @router.post('/api/account/logout')
     def logout(request: Request,response: Response):
@@ -416,6 +438,7 @@ def install(main):
     def users(q:str=''):
         with main.connect() as conn:
             return conn.execute("SELECT p.id,p.name,a.instagram,a.status,a.created_at,p.spins_left,"
+                                "CASE WHEN a.phone_last4 IS NULL THEN 'Não informado' ELSE '(**) *****-'||a.phone_last4 END AS phone_masked,"
                                 "CASE WHEN a.cpf_last2 IS NULL THEN 'Eliminado' ELSE '***.***.***-'||a.cpf_last2 END AS cpf_masked,"
                                 "(SELECT count(*) FROM spins s WHERE s.player_id=p.id) AS spins_played,"
                                 "(SELECT coalesce(sum(amount),0) FROM spin_ledger l WHERE l.player_id=p.id AND kind='INDICACAO') AS referral_spins,"

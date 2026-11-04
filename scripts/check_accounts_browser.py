@@ -16,19 +16,15 @@ from playwright.sync_api import sync_playwright
 import httpx
 
 
-def cpf(n):
-    value=f'{100000000+n:09d}'
-    for size in (9,10):
-        digit=sum(int(value[i])*(size+1-i) for i in range(size))*10%11
-        value+=str(0 if digit==10 else digit)
-    return value
+def phone(n):
+    return f'279{10000000+n:08d}'
 
 
 def signup(page,n):
     page.get_by_role('button',name='ENTRAR OU CADASTRAR').click()
     page.get_by_role('button',name='CRIAR MINHA CONTA').click()
     page.locator('#name').fill('Pessoa Teste')
-    page.locator('#cpf').fill(cpf(n));page.locator('#instagram').fill(f'visual_{n}')
+    page.locator('#account-phone').fill(phone(n));page.locator('#instagram').fill(f'visual_{n}')
     page.locator('#password').fill('browser-test-password');page.locator('#password-confirmation').fill('browser-test-password')
     page.locator('#adult').check();page.locator('#accept-terms').check()
     page.locator('#form').get_by_role('button').click()
@@ -69,7 +65,7 @@ def main():
                 assert 'ChunkFive' in page.locator('header b').evaluate('(el)=>getComputedStyle(el).fontFamily')
                 page.get_by_role('button',name='ENTRAR OU CADASTRAR').click();page.get_by_role('button',name='CRIAR MINHA CONTA').click()
                 bounds=page.locator('#registration').bounding_box();assert bounds['width']<=600 and bounds['height']<=860
-                assert page.locator('#cpf').bounding_box()['x']<page.locator('#instagram').bounding_box()['x']
+                assert page.locator('#account-phone').bounding_box()['x']<page.locator('#instagram').bounding_box()['x']
                 page.screenshot(path='/tmp/fortune-registration-desktop.png')
                 page.locator('#registration-close').click();page.set_viewport_size({'width':390,'height':844});signup(page,0)
                 assert page.locator('#copy-referral-link').is_visible()
@@ -100,7 +96,7 @@ def main():
                 page.screenshot(path='/tmp/fortune-game-desktop.png',full_page=True)
                 page.get_by_role('button',name='MEU PERFIL',exact=True).click();page.locator('#profile-balance').wait_for(state='visible');assert page.locator('#wallet-history').count()==0;page.locator('#profile-close').click()
                 page.get_by_role('button',name='SAIR',exact=True).click();page.locator('#account-toolbar').wait_for(state='hidden')
-                page.locator('#spin').click();page.locator('#login-dialog').wait_for(state='visible');page.locator('#login-identifier').fill(cpf(0));page.locator('#login-password').fill('browser-test-password');page.locator('#login-form button').click();page.locator('#account-toolbar').wait_for(state='visible')
+                page.locator('#spin').click();page.locator('#login-dialog').wait_for(state='visible');page.locator('#login-identifier').fill(phone(0));page.locator('#login-password').fill('browser-test-password');page.locator('#login-form button').click();page.locator('#account-toolbar').wait_for(state='visible')
                 adminpage=context.new_page();adminpage.on('pageerror',lambda error:errors.append(str(error)));adminpage.goto(origin+'/admin.html');adminpage.locator('#admin-key').fill(env['ADMIN_API_KEY']);adminpage.locator('#admin-form button').click();adminpage.locator('#dashboard').wait_for(state='visible')
                 assert adminpage.locator('#account-users li').count()==2
                 assert 'VISUAL2' in adminpage.locator('#promo-list').inner_text()
