@@ -73,7 +73,7 @@ window.FORTUNE_ASSETS = {
     popupKicker: "A SORTE CONTINUA NA FESTA",
     popupEventLabel: "NOSSO PRÓXIMO ENCONTRO",
     noPrizeTitle: "O rolê ainda reserva surpresas!",
-    noPrizeMessage: "Não foi dessa vez nos seus giros, mas vai ter mais prêmios no dia da Calourada! Garanta seu ingresso e vem curtir com a gente.",
+    noPrizeMessage: "Não foi dessa vez nos seus giros, mas vai ter mais prêmios no dia da Calourada! Garanta seu ingresso e vem pro risca",
     ticketButton: "GARANTIR MEU INGRESSO ↗",
     pendingSpin: "Há um giro pendente. Clique em GIRAR para recuperar o resultado sem consumir outro giro.",
     event: "05 DE DEZEMBRO • 21H | CASA BRAVA"
